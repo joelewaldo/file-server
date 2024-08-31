@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Files List</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/file_style.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/gallery_style.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="sidebar">
+        <ul>
+          <li class="new-btn">
+            <a href="#"><i class="fas fa-plus"></i> New</a>
+          </li>
+          <li>
+            <a href="#"><i class="fas fa-cog"></i> Settings</a>
+          </li>
+        </ul>
+      </div>
+      {% block content %} {% endblock %}
+    </div>
+
+    <!-- New Options Infobar -->
+    <div id="new-options-infobar" class="infobar">
+      <ul class="infobar-options">
+        <li>
+          <i class="fas fa fa-plus-circle"></i>
+          <button id="create-folder-btn">Create Folder</button>
+        </li>
+        <li>
+          <i class="fas fa-folder-plus"></i>
+          <!-- Add a folder icon for Upload Folder -->
+          <button id="upload-folder-btn">Upload Folder</button>
+        </li>
+        <li>
+          <i class="fas fa-file-upload"></i>
+          <button id="upload-file-btn">Upload File</button>
+        </li>
+      </ul>
+    </div>
+
+    <!-- New Folder Popup -->
+    <div id="new-folder-popup" class="popup-overlay">
+      <div class="popup-content">
+        <span class="close" id="close-new-folder-popup">&times;</span>
+        <h2>Create New Folder</h2>
+        <div class="folder-name-container">
+          <input
+            type="text"
+            id="folder-name-input"
+            placeholder="Enter folder name"
+          />
+          <button id="create-folder-confirm-btn">Create Folder</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload Folder Popup -->
+    <div id="upload-folder-popup" class="popup-overlay">
+      <div class="popup-content">
+        <span id="close-folder-popup" class="close">&times;</span>
+        <div class="upload-container">
+          <h2>Upload Folder</h2>
+          <form class="my-form">
+            <input
+              type="file"
+              id="folder-input"
+              webkitdirectory
+              directory
+              multiple
+            />
+            <label class="button" for="folder-input">Select Folder</label>
+          </form>
+          <div
+            id="upload-progress"
+            class="progress-container"
+            style="display: none"
+          >
+            <progress
+              id="progress-bar"
+              class="progress-bar"
+              max="100"
+              value="0"
+            ></progress>
+            <span id="progress-text">0%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload Popup -->
+    <div id="upload-popup" class="popup-overlay">
+      <div class="popup-content">
+        <span id="close-popup" class="close">&times;</span>
+        <div class="upload-container">
+          <h1>Drag & Drop Files to Upload</h1>
+          <div id="drop-area">
+            <form class="my-form">
+              <input
+                type="file"
+                id="fileElem"
+                multiple
+                onchange="handleFiles(this.files)"
+              />
+              <label class="button" for="fileElem">Drop or Select Files</label>
+            </form>
+          </div>
+          <div id="gallery"></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      const dropArea = document.getElementById("drop-area");
+
+      ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+      });
+
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      ["dragenter", "dragover"].forEach((eventName) => {
+        dropArea.addEventListener(
+          eventName,
+          () => dropArea.classList.add("highlight"),
+          false
+        );
+      });
+
+      ["dragleave", "drop"].forEach((eventName) => {
+        dropArea.addEventListener(
+          eventName,
+          () => dropArea.classList.remove("highlight"),
+          false
+        );
+      });
+
+      dropArea.addEventListener("drop", handleDrop, false);
+
+      function handleDrop(e) {
+        let dt = e.dataTransfer;
+        let files = dt.files;
+
+        handleFiles(files);
+      }
+
+      function handleFiles(files) {
+        [...files].forEach(uploadFile);
+      }
+
+      function formatFileSize(bytes) {
+        const units = ["Bytes", "KB", "MB", "GB", "TB"];
+        let size = bytes;
+        let unitIndex = 0;
+
+        while (size >= 1024 && unitIndex < units.length - 1) {
+          size /= 1024;
+          unitIndex++;
+        }
+
+        return `${size.toFixed(1)} ${units[unitIndex]}`;
+      }
+
+      function formatDate(utcDateStr) {
+        const date = new Date(utcDateStr + "Z");
+        const options = { year: "numeric", month: "short", day: "numeric" };
+        return new Intl.DateTimeFormat(navigator.language, options).format(
+          date
+        );
+      }
+
+      function formatFileSize(bytes) {
+        const units = ["Bytes", "KB", "MB", "GB", "TB", "PB"];
+        let size = bytes;
+        let unitIndex = 0;
+
+        while (size >= 1024 && unitIndex < units.length - 1) {
+          size /= 1024;
+          unitIndex++;
+        }
+
+        return `${size.toFixed(1)} ${units[unitIndex]}`;
+      }
+
+      function uploadFile(file) {
+        let url = "/upload";
+        let formData = new FormData();
+        const parentId = '{{ current_folder.id if current_folder else "" }}';
+        formData.append("file", file);
+        formData.append("parent_id", parentId);
+
+        let gallery = document.getElementById("gallery");
+
+        let fileContainer = document.createElement("div");
+        fileContainer.classList.add("file-container");
+
+        let fileIcon = document.createElement("i");
+        fileIcon.classList.add("file-icon");
+
+        // Determine the file type and set the appropriate icon
+        let fileType = file.type.split("/")[0];
+        switch (fileType) {
+          case "image":
+            fileIcon.classList.add("fas", "fa-image");
+            break;
+          case "application":
+            if (file.type.includes("pdf")) {
+              fileIcon.classList.add("fas", "fa-file-pdf");
+            } else {
+              fileIcon.classList.add("fas", "fa-file-alt");
+            }
+            break;
+          case "text":
+            fileIcon.classList.add("fas", "fa-file-alt");
+            break;
+          default:
+            fileIcon.classList.add("fas", "fa-file");
+            break;
+        }
+
+        let fileDetails = document.createElement("div");
+        fileDetails.classList.add("file-details");
+
+        let fileName = document.createElement("div");
+        fileName.classList.add("file-name");
+        fileName.textContent = file.name;
+
+        let fileSize = document.createElement("div");
+        fileSize.classList.add("file-size");
+        fileSize.textContent = formatFileSize(file.size);
+
+        fileDetails.appendChild(fileName);
+        fileDetails.appendChild(fileSize);
+
+        let progressWrapper = document.createElement("div");
+        progressWrapper.classList.add("progress-wrapper");
+
+        let progressBar = document.createElement("progress");
+        progressBar.classList.add("progress-bar");
+        progressBar.max = 100;
+        progressBar.value = 0;
+
+        progressWrapper.appendChild(progressBar);
+
+        fileContainer.appendChild(fileIcon);
+        fileContainer.appendChild(fileDetails);
+        fileContainer.appendChild(progressWrapper);
+        gallery.appendChild(fileContainer);
+
+        fetch(url, {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log("File uploaded successfully:", data);
+            progressBar.value = 100;
+          })
+          .catch((error) => {
+            console.error("Error uploading file:", error);
+            progressBar.value = 0; // Reset on error
+          });
+
+        // Simulate progress for the sake of the example (remove this in a real implementation)
+        let simulateProgress = setInterval(() => {
+          if (progressBar.value < 100) {
+            progressBar.value += 10;
+          } else {
+            clearInterval(simulateProgress);
+          }
+        }, 100);
+      }
+
+      const uploadFolderBtn = document.getElementById("upload-folder-btn");
+      const uploadFolderPopup = document.getElementById("upload-folder-popup");
+      const closeFolderPopup = document.getElementById("close-folder-popup");
+
+      // Show the upload folder popup when the button is clicked
+      uploadFolderBtn.addEventListener("click", function () {
+        uploadFolderPopup.style.display = "flex";
+      });
+
+      // Close the upload folder popup when the close button is clicked
+      closeFolderPopup.addEventListener("click", function () {
+        uploadFolderPopup.style.display = "none";
+      });
+
+      // Hide the upload folder popup when clicking outside the popup
+      window.addEventListener("click", function (event) {
+        if (event.target === uploadFolderPopup) {
+          uploadFolderPopup.style.display = "none";
+          window.location.reload();
+        }
+      });
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const searchBar = document.getElementById("search-bar");
+        const searchDropdown = document.getElementById("search-dropdown");
+
+        // Show dropdown when search bar is focused
+        searchBar.addEventListener("focus", function () {
+          searchBar.classList.add("active");
+          searchDropdown.classList.add("show");
+        });
+
+        // Hide dropdown and reset search bar shape when clicking outside
+        document.addEventListener("click", function (event) {
+          if (
+            !searchBar.contains(event.target) &&
+            !searchDropdown.contains(event.target)
+          ) {
+            searchDropdown.classList.remove("show");
+            searchBar.classList.remove("active");
+          }
+        });
+
+        // Handle advanced search button click
+        document
+          .getElementById("advanced-search-btn")
+          .addEventListener("click", function () {
+            // Redirect to advanced search page or show advanced search options
+            alert("Advanced Search clicked!");
+          });
+
+        const newButton = document.querySelector(".new-btn");
+        const infobar = document.getElementById("new-options-infobar");
+        const uploadPopup = document.getElementById("upload-popup");
+        const closePopup = document.getElementById("close-popup");
+        const newFolderPopup = document.getElementById("new-folder-popup");
+        const closeNewFolderPopup = document.getElementById(
+          "close-new-folder-popup"
+        );
+
+        // Show infobar
+        newButton.addEventListener("click", function (event) {
+          console.log("clicked");
+          event.stopPropagation(); // Prevent event from propagating to window click event
+          infobar.style.display =
+            infobar.style.display === "block" ? "none" : "block";
+        });
+
+        // Hide infobar when clicking outside
+        window.addEventListener("click", function (event) {
+          if (event.target !== newButton && !infobar.contains(event.target)) {
+            infobar.style.display = "none";
+          }
+        });
+
+        document
+          .getElementById("create-folder-btn")
+          .addEventListener("click", function () {
+            newFolderPopup.style.display = "flex"; // Show the new folder popup
+          });
+
+        document
+          .getElementById("upload-file-btn")
+          .addEventListener("click", function () {
+            uploadPopup.style.display = "flex";
+          });
+
+        // Close the upload popup
+        closePopup.addEventListener("click", function () {
+          uploadPopup.style.display = "none";
+          window.location.reload();
+        });
+
+        // Hide upload popup when clicking outside
+        window.addEventListener("click", function (event) {
+          if (event.target === uploadPopup) {
+            uploadPopup.style.display = "none";
+            window.location.reload();
+          }
+        });
+
+        // Close the new folder popup
+        closeNewFolderPopup.addEventListener("click", function () {
+          newFolderPopup.style.display = "none";
+        });
+
+        // Hide new folder popup when clicking outside
+        window.addEventListener("click", function (event) {
+          if (event.target === newFolderPopup) {
+            newFolderPopup.style.display = "none";
+          }
+        });
+
+        const createFolderConfirmBtn = document.getElementById(
+          "create-folder-confirm-btn"
+        );
+        const folderNameInput = document.getElementById("folder-name-input");
+
+        createFolderConfirmBtn.addEventListener("click", function () {
+          const folderName = folderNameInput.value.trim();
+          const parentId = '{{ current_folder.id if current_folder else "" }}';
+
+          if (folderName) {
+            fetch("/create_folder", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              body: new URLSearchParams({
+                folder_name: folderName,
+                parent_id: parentId,
+              }),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.error) {
+                  // alert(data.error);
+                } else {
+                  // alert(data.message);
+                  newFolderPopup.style.display = "none"; // Hide the folder popup
+                  window.location.reload();
+                }
+              })
+              .catch((error) => {
+                console.error("Error creating folder:", error);
+                alert("An error occurred while creating the folder.");
+              });
+          } else {
+            alert("Folder name cannot be empty.");
+          }
+        });
+      });
+    </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const folderInput = document.getElementById("folder-input");
+        const uploadProgress = document.getElementById("upload-progress");
+        const progressBar = document.getElementById("progress-bar");
+        const progressText = document.getElementById("progress-text");
+
+        // Function to process files
+        async function processFiles(files) {
+          let totalFiles = files.length;
+          let uploadedFiles = 0;
+
+          function updateProgress() {
+            const progress = (uploadedFiles / totalFiles) * 100;
+            progressBar.value = progress;
+            progressText.textContent = `${Math.round(progress)}%`;
+            uploadProgress.style.display = progress === 100 ? "none" : "block";
+          }
+
+          async function folderExists(folderName, parentId) {
+            const response = await fetch(
+              `/folder?folder_name=${encodeURIComponent(
+                folderName
+              )}&parent_id=${parentId}`
+            );
+            const data = await response.json();
+            return data.folder_id ? data.folder_id : "";
+          }
+
+          async function processEntry(
+            entry,
+            parentId = '{{ current_folder.id if current_folder else "" }}'
+          ) {
+            const relativePath = entry.webkitRelativePath;
+            const parts = relativePath.split("/");
+            const fileName = parts.pop();
+            const folderPath = parts.join("/");
+
+            let currentParentId = parentId;
+            if (folderPath) {
+              const folders = folderPath.split("/");
+              for (const folder of folders) {
+                const existingFolderId = await folderExists(
+                  folder,
+                  currentParentId
+                );
+                if (!existingFolderId) {
+                  const response = await fetch("/create_folder", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: new URLSearchParams({
+                      folder_name: folder,
+                      parent_id: currentParentId,
+                    }),
+                  });
+
+                  if (response.ok) {
+                    const data = await response.json();
+                    currentParentId = data.folder_id;
+                  } else {
+                    console.error("Failed to create folder:", folder);
+                    return;
+                  }
+                } else {
+                  currentParentId = existingFolderId;
+                }
+              }
+            }
+
+            const formData = new FormData();
+            formData.append("file", entry);
+            formData.append("parent_id", currentParentId);
+
+            await fetch("/upload", {
+              method: "POST",
+              body: formData,
+            });
+
+            uploadedFiles++;
+            updateProgress();
+          }
+
+          uploadProgress.style.display = "block"; // Show the progress bar
+          for (const item of files) {
+            await processEntry(item);
+          }
+          uploadProgress.style.display = "none"; // Hide the progress bar when done
+          window.location.reload();
+        }
+
+        folderInput.addEventListener("change", function () {
+          processFiles(folderInput.files);
+        });
+      });
+    </script>
+    <script>
+      // Search bar functionality
+      document.addEventListener('DOMContentLoaded', function () {
+        const searchBar = document.getElementById('search-bar');
+        const searchDropdown = document.getElementById('search-dropdown');
+        const searchResultsDiv = document.getElementById('search-results');
+        const searchHistoryDiv = document.getElementById('search-history');
+        
+        function debounce(func, delay) {
+          let timer;
+          return function (...args) {
+            const context = this;
+            clearTimeout(timer);
+            timer = setTimeout(() => func.apply(context, args), delay);
+          };
+        }
+    
+        const performSearch = debounce(function () {
+          const query = searchBar.value.trim();
+    
+          if (query.length > 0) {
+            fetch(`/search?query=${encodeURIComponent(query)}&per_page=5`)
+              .then(response => response.json())
+              .then(data => {
+                // Clear previous results
+                searchResultsDiv.innerHTML = '';
+    
+                // If there are results, display them
+                if (data.results && data.results.length > 0) {
+                  searchResultsDiv.style.display = 'block';
+                  searchHistoryDiv.style.display = 'none';
+    
+                  data.results.forEach(item => {
+                    const resultItem = document.createElement('div');
+                    resultItem.classList.add('search-result-item');
+    
+                    // Add folder or file icon
+                    const icon = document.createElement('i');
+                    icon.classList.add('fas', item.type === 'folder' ? 'fa-folder' : 'fa-file');
+                    resultItem.appendChild(icon);
+    
+                    // Add name of the item
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = item.name;
+                    resultItem.appendChild(nameSpan);
+    
+                    // Create actions container
+                    const actionsDiv = document.createElement('div');
+                    actionsDiv.classList.add('search-result-actions');
+    
+                    // Add delete button
+                    const deleteButton = document.createElement('i');
+                    deleteButton.classList.add('fas', 'fa-trash');
+                    deleteButton.title = 'Delete';
+                    deleteButton.addEventListener('click', function(event) {
+                      event.stopPropagation();
+                      // Handle delete action
+                      const url = item.type == 'file' ? `/delete/${item.id}` :  `/delete_folder/${item.id}`;
+                      if (confirm("Are you sure you want to delete this item?")) {
+                        fetch(url, {
+                          method: "DELETE",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                        })
+                          .then((response) => {
+                            if (response.ok) {
+                              window.location.reload();
+                            } else {
+                              alert("Failed to delete item.");
+                            }
+                          })
+                          .catch((error) => {
+                            console.error("Error:", error);
+                            alert("Failed to delete item.");
+                          });
+                      }
+                    });
+                    actionsDiv.appendChild(deleteButton);
+    
+                    // Add download button
+                    const downloadButton = document.createElement('i');
+                    downloadButton.classList.add('fas', 'fa-download');
+                    downloadButton.title = 'Download';
+                    downloadButton.addEventListener('click', function(event) {
+                      event.stopPropagation();
+                      // Handle download action
+                      console.log('Download:', item);
+                      window.location.href = `/download/${item.id}`;
+                    });
+                    actionsDiv.appendChild(downloadButton);
+    
+                    resultItem.appendChild(actionsDiv);
+    
+                    resultItem.addEventListener('click', function() {
+                      if (item.type === 'folder') {
+                        const url = new URL(window.location.href);
+                        url.searchParams.set("folder_id", item.id);
+                        window.location.href = url;
+                      } else {
+                        const url = `/files/${item.id}`;
+                        fetch(url, {
+                          method: "GET",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                        })
+                          .then((response) => response.text())
+                          .then((html) => {
+                            const popupContainer = document.createElement("div");
+                            popupContainer.innerHTML = html;
+                            document.body.appendChild(popupContainer);
+    
+                            const closeButton = popupContainer.querySelector(".media-close");
+                            if (closeButton) {
+                              closeButton.addEventListener("click", function () {
+                                document.body.removeChild(popupContainer);
+                              });
+                            }
+                          })
+                          .catch((error) => {
+                            console.error("Error fetching file info:", error);
+                          });
+                      }
+                    });
+    
+                    // Append the result item to the results div
+                    searchResultsDiv.appendChild(resultItem);
+                  });
+                } else {
+                  // If no results, hide the results div and show the history
+                  searchResultsDiv.style.display = 'none';
+                  searchHistoryDiv.style.display = 'block';
+                }
+              })
+              .catch(error => {
+                console.error('Error fetching search results:', error);
+              });
+          } else {
+            // If the query is empty, hide the results div and show the history
+            searchResultsDiv.style.display = 'none';
+            searchHistoryDiv.style.display = 'block';
+          }
+        }, 300); // Delay of 300ms
+    
+        searchBar.addEventListener('input', performSearch);
+      });
+    </script>
+  </body>
+</html>

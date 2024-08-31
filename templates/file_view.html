@@ -1,0 +1,20 @@
+<div class="popup-media-overlay">
+  <div class="popup-media-container">
+    <div class="popup-media-title">
+      <h4>{{ file.filename }}</h2>
+      <i class="media-close fa fa-times" aria-hidden="true"></i>
+    </div>
+    <div class="popup-media-box">
+      {% if 'image' in mime_type %}
+        <img src="{{ url_for('main.download_file', file_id=file.id) }}" alt="{{ filename }}" class="popup-media">
+      {% elif 'video' in mime_type %}
+        <video controls class="popup-media">
+          <source src="{{ url_for('main.download_file', file_id=file.id) }}" type="video/{{ file_extension }}">
+          Your browser does not support the video tag.
+        </video>
+      {% else %}
+        <p>File type not supported for preview.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>

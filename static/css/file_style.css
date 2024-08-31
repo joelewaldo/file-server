@@ -1,0 +1,841 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-height: 100vh; /* Full viewport height */
+}
+
+.cursor {
+  cursor: pointer;
+}
+
+.pointer {
+  cursor: default;
+}
+
+.no-select {
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Old versions of Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}
+
+/* Gridview toggle button */
+.toggle-button-container {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.toggle-button {
+  display: flex;
+  width: 120px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  background-color: #f5f5f5;
+}
+
+.toggle-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  color: #666;
+  font-size: 18px;
+  transition: background-color 0.3s, color 0.3s;
+  text-decoration: none;
+}
+
+.toggle-option i {
+  display: block;
+}
+
+.grid-view {
+  background-color: #e0e0e0;
+}
+
+.file-view {
+  background-color: #f5f5f5;
+}
+
+/* Container styles */
+.container {
+  display: flex;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* Sidebar styles */
+.sidebar {
+  width: 150px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* .sidebar ul li {
+  border-bottom: 1px solid #ddd;
+} */
+
+.sidebar ul li a {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  color: #333;
+  text-decoration: none;
+  font-size: 16px;
+  transition: background 0.3s ease;
+}
+
+/* Sidebar link hover effect */
+.sidebar ul li a:hover {
+  background: #f4f4f4; /* Light gray background on hover */
+}
+
+/* Sidebar icons */
+.sidebar ul li a i {
+  margin-right: 10px; /* Space between icon and text */
+  font-size: 20px; /* Size of the icons */
+}
+
+/* Infobar Styles */
+.infobar {
+  position: absolute;
+  top: 60px; /* Adjust as needed */
+  left: 50px; /* Adjust as needed */
+  width: 200px; /* Adjust as needed */
+  background: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: none; /* Hidden by default */
+  z-index: 1000; /* Ensure it’s above other elements */
+}
+
+.infobar-options {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.infobar-options li {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.infobar-options li:last-child {
+  border-bottom: none;
+}
+
+.infobar-options i {
+  margin-right: 10px;
+}
+
+.infobar-options button {
+  border: none;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  color: #333;
+  padding: 0;
+}
+
+.infobar-options button:hover {
+  text-decoration: underline;
+}
+
+/* Content area styles */
+.content {
+  flex: 1; /* Allow content area to grow and fill remaining space */
+  padding: 20px;
+  overflow: hidden; /* Prevent overflow */
+}
+
+.content h1 {
+  margin-bottom: 30px;
+  color: #333;
+}
+
+/* Adjustments for the table container */
+.table-container {
+  overflow-y: auto; /* Enable vertical scrolling if needed */
+  flex: 1; /* Grow to fill available space */
+  width: 100%;
+}
+
+/* Search Bar Container */
+.search-bar-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.search-bar-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 600px; /* Adjust as needed */
+  width: 100%;
+}
+
+#search-bar {
+  width: 100%;
+  padding: 10px 15px 10px 40px; /* Add padding to accommodate the icon */
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 24px; /* Rounded corners */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  outline: none;
+  /* transition: all 0.3s ease; Smooth transition for all properties */
+}
+
+#search-bar.active {
+  border-radius: 24px 24px 0 0; /* Change radius to connect with dropdown */
+  /* border-color: #007bff; */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* #search-bar:focus {
+  border-color: #007bff;
+} */
+
+.search-bar-wrapper i.fa-search {
+  position: absolute;
+  left: 15px; /* Position icon inside the input field */
+  font-size: 16px;
+  color: #666; /* Icon color */
+}
+
+.search-dropdown {
+  display: none; /* Hidden by default */
+  position: absolute;
+  top: calc(100% - 1px); /* Position it just below the search bar */
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 0 0 24px 24px; /* Rounded bottom corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  width: 100%;
+  box-sizing: border-box;
+  /* max-height: 300px; */
+  overflow-y: auto; /* Add scrollbar if content overflows */
+  transition: opacity 0.3s ease, transform 0.3s ease; /* Smooth transition */
+  opacity: 0; /* Start with hidden state */
+  transform: translateY(-10px); /* Slightly shift up for smooth entrance */
+}
+
+.search-dropdown.show {
+  display: block; /* Make dropdown visible */
+  opacity: 1; /* Fully opaque */
+  transform: translateY(0); /* Reset shift for smooth entrance */
+}
+
+.search-dropdown .search-history {
+  width: 100%;
+}
+
+.search-dropdown .search-history p {
+  margin: 10px;
+  text-align: center;
+  color: #666;
+}
+
+.search-dropdown #advanced-search-btn {
+  padding: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  /* border-radius: 4px; */
+  background-color: #007bff;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.search-dropdown #advanced-search-btn:hover {
+  background-color: #0056b3;
+}
+
+#search-results {
+  width: 100%;
+  position: relative;
+}
+
+.search-result-item {
+  width: 100%; /* Ensure it spans the full width of the dropdown */
+  padding: 10px;
+  min-width: 50px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-start;
+  border-bottom: 1px solid #ddd;
+}
+
+.search-result-item:hover {
+  background-color: #f0f0f0; /* Light gray color */
+}
+
+.search-result-item i {
+  width: 16px;
+  height: 16px;
+  text-align: center;
+}
+
+.search-result-actions {
+  display: none;
+}
+
+.search-result-item:hover .search-result-actions {
+  display: flex;
+  position: absolute;
+  flex-direction: row-reverse;
+  right: 10px; /* Distance from the right edge of the .search-result-item */
+  gap: 10px;
+}
+
+/* Breadcrumb css */
+.breadcrumb {
+  margin: 10px 0;
+  font-size: 14px;
+}
+
+.breadcrumb a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+/* Apply to the table container to style its scrollbar */
+.table-container {
+  overflow-y: auto; /* Ensure vertical scrolling is enabled */
+}
+
+.table-container::-webkit-scrollbar {
+  width: 8px; /* Width of the vertical scrollbar */
+}
+
+.table-container::-webkit-scrollbar-button {
+  display: none;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: transparent; /* Background color of the track */
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3); /* Color of the scroll thumb */
+  border-radius: 10px; /* Rounded corners of the thumb */
+  transition: background 0.3s ease; /* Smooth transition for hover effect */
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5); /* Color of the thumb on hover */
+}
+
+/* Style for the corner of the scrollbar (optional) */
+.table-container::-webkit-scrollbar-corner {
+  background: transparent; /* Background color of the corner */
+}
+
+/* Initial hidden state of the actions */
+.actions {
+  display: none;
+  justify-content: flex-end;
+  gap: 15px; /* Space between buttons */
+  padding-right: 25px;
+}
+
+.file-row:hover {
+  background-color: #f0f0f0; /* Light gray color */
+}
+
+/* Highlighted row style */
+.file-row.highlighted-row {
+  background-color: #c2eeff;
+}
+
+/* Show actions on hover */
+.file-row:hover .actions {
+  display: flex;
+}
+
+/* Align the actions to the right */
+.actions-cell {
+  text-align: right;
+  width: 150px; /* Adjust width as needed */
+}
+
+.btn-download,
+.btn-delete {
+  background-color: transparent;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  padding: 5px 10px;
+  font-size: 14px;
+}
+
+.btn-download:hover,
+.btn-delete:hover {
+  color: #0056b3;
+}
+
+.content {
+  width: 100%;
+  margin: 20px;
+  height: calc(100vh - 80px); /* Full viewport height minus margin */
+  padding: 20px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Hide overflow from content */
+  display: flex;
+  flex-direction: column;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.per-page-form {
+  text-align: right;
+  margin-bottom: 20px;
+}
+
+.per-page-form label {
+  margin-right: 10px;
+  font-size: 16px;
+  color: #333;
+}
+
+.per-page-form select {
+  padding: 5px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
+  color: #333;
+  transition: border-color 0.3s ease;
+}
+
+.per-page-form select:focus {
+  border-color: #007bff;
+}
+
+.table-container {
+  flex: 1; /* Grow to take available space */
+  overflow: auto; /* Allow scrolling */
+}
+
+.file-list {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  table-layout: fixed; /* Ensure table layout is fixed */
+}
+
+.file-list th,
+.file-list td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.file-list th:first-child,
+.file-list td:first-child {
+  width: 60%; /* Allocate more space for the file name */
+}
+
+.file-list th:last-child {
+  text-align: left;
+}
+
+/* 
+.file-list th:nth-child(2),
+.file-list td:nth-child(2) {
+  width: 15%;
+  text-align: left;
+} */
+
+/* .file-list th:last-child,
+.file-list td:last-child {
+  width: 20%;
+  text-align: left;
+} */
+
+.file-list th {
+  background-color: #fff;
+  font-size: 16px;
+  color: #333;
+  position: -webkit-sticky; /* For Safari */
+  position: sticky;
+  top: 0; /* Stick to the top */
+  z-index: 1; /* Ensure it stays above other content */
+}
+
+.file-list td {
+  font-size: 14px;
+  color: #666;
+}
+
+.file-list td a.view-link {
+  color: #007bff;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.file-list td a.view-link:hover {
+  color: #0056b3;
+}
+
+.pagination {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.pagination span {
+  margin: 0 10px;
+  font-size: 14px;
+  color: #666;
+}
+
+.pagination a.pagination-link {
+  color: #007bff;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  margin: 0 5px;
+}
+
+.pagination a.pagination-link:hover {
+  color: #0056b3;
+}
+
+/* Loading Indicator */
+#loading-indicator {
+  text-align: center;
+  margin-top: 20px;
+  display: none;
+}
+
+.loading .spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Popup Overlay */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.popup-content {
+  background: #fff;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 600px;
+  text-align: center;
+  position: relative;
+}
+
+.close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+
+/* New Folder Popup Styles */
+#new-folder-popup {
+  display: none; /* Hidden by default */
+}
+
+/* Close Button */
+.popup-content .close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Media Popup */
+.popup-media-overlay {
+  position: fixed;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.popup-media-container {
+  background: #fff;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  height: 80%;
+  text-align: center;
+  /* position: relative; */
+}
+
+.popup-media-container .media-close {
+  font-size: 24px;
+  line-height: 1;
+  text-align: center;
+  cursor: pointer;
+}
+
+.popup-media-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+}
+
+.popup-media-box {
+  width: 100%;
+  height: 92%;
+  overflow: hidden;
+}
+
+.popup-media {
+  position: relative;
+  object-fit: contain;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Folder Name Input and Button */
+.folder-name-container {
+  margin-top: 20px;
+}
+
+.folder-name-container input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+#create-folder-confirm-btn {
+  background-color: #28a745;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+#create-folder-confirm-btn:hover {
+  background-color: #218838; /* Darker green for hover */
+}
+
+/* Upload Folder Styles */
+
+.upload-container {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+#folder-input {
+  display: none;
+}
+
+/* Upload File Styles */
+#drop-area {
+  border: 2px dashed #ccc;
+  border-radius: 10px;
+  padding: 75px;
+  /* margin: 20px 0; */
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+#drop-area.highlight {
+  border-color: purple;
+}
+
+#fileElem {
+  display: none;
+}
+
+.button {
+  background-color: purple;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+#gallery {
+  margin-top: 20px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+#upload-popup .close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.file-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.file-icon {
+  font-size: 24px;
+  margin-right: 10px;
+}
+
+.file-details {
+  flex-grow: 1;
+}
+
+.file-name {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.file-size {
+  color: #666;
+  font-size: 14px;
+}
+
+.progress-wrapper {
+  display: flex;
+  align-items: center;
+  margin-left: 20px;
+  width: 30%;
+}
+
+.progress-bar {
+  flex-grow: 1;
+  height: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #f4f4f4;
+}
+
+.progress-bar progress {
+  width: 100%;
+  appearance: none;
+  height: 100%;
+}
+
+.progress-bar progress::-webkit-progress-bar {
+  background-color: #f4f4f4;
+}
+
+.progress-bar progress::-webkit-progress-value {
+  background-color: purple;
+}
+
+.progress-bar progress::-moz-progress-bar {
+  background-color: purple;
+}
+
+.progress-container {
+  margin-top: 20px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 20px;
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: #eee;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.progress-bar::-webkit-progress-bar {
+  background-color: #eee;
+}
+
+.progress-bar::-webkit-progress-value {
+  background-color: #4caf50;
+}
+
+.progress-bar::-moz-progress-bar {
+  background-color: #4caf50;
+}
+
+#progress-text {
+  margin-top: 10px;
+  font-size: 16px;
+}

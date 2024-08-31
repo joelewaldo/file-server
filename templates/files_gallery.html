@@ -1,0 +1,374 @@
+{% extends "files_base.html" %} {% block content %}
+<div class="content">
+  <h1>Welcome to the File Server</h1>
+
+  <!-- Search Bar -->
+  <div class="search-bar-container">
+    <div class="search-bar-wrapper">
+      <i class="fas fa-search"></i>
+      <input
+        type="text"
+        id="search-bar"
+        placeholder="Search in Server"
+        aria-haspopup="true"
+      />
+      <div id="search-dropdown" class="search-dropdown">
+        <div id="search-history" class="search-history">
+          <p>No recent searches</p>
+          <!-- Add recent searches dynamically here -->
+        </div>
+        <div id="search-results" class="search-results" style="display: none;">
+          <!-- Search results will be dynamically added here -->
+        </div>
+        <button id="advanced-search-btn">Advanced Search</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toggle-button-container">
+    <div class="toggle-button" id="toggleButton">
+      {% if folder_data %}
+      <a
+        class="toggle-option file-view"
+        href="{{ url_for('main.list_files', folder_id=folder_data[-1][1]) }}"
+      >
+        <div class="">
+          <i class="fas fa-list"></i>
+          <!-- Grid view icon -->
+        </div>
+      </a>
+      <a
+        class="toggle-option grid-view"
+        href="{{ url_for('main.gallery', folder_id=folder_data[-1][1]) }}"
+      >
+        <div class="">
+          <i class="fas fa-th"></i>
+          <!-- File view icon -->
+        </div>
+      </a>
+      {% else %}
+      <a
+        class="toggle-option file-view"
+        href="{{ url_for('main.list_files') }}"
+      >
+        <div class="">
+          <i class="fas fa-list"></i>
+          <!-- Grid view icon -->
+        </div>
+      </a>
+      <a class="toggle-option grid-view" href="{{ url_for('main.gallery') }}">
+        <div class="">
+          <i class="fas fa-th"></i>
+          <!-- File view icon -->
+        </div>
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Breadcrumb Navigation -->
+  <div class="breadcrumb">
+    <a href="{{ url_for('main.gallery') }}">Home</a>
+    {% if folder_data %} {% for name, id in folder_data %} >
+    <a href="{{ url_for('main.gallery', folder_id=id) }}">{{ name }}</a>
+    {% endfor %} {% endif %}
+  </div>
+
+  <!-- Gallery View -->
+  <div class="gallery-view">
+    <h4>Folders</h4>
+    <div class="gallery-folders">
+      {% if folders %} {% for folder in folders %}
+      <div
+        class="folder-item no-select pointer"
+        data-redirect-url="{{ url_for('main.gallery', folder_id=folder.id) }}"
+      >
+        <div class="folder-item-title">
+          <i class="fas fa-folder"></i>
+          <span>{{ folder.name }}</span>
+        </div>
+        <div class="item-icon">
+          <i class="fas fa-ellipsis-v more-icon"></i>
+        </div>
+        <div class="file-dropdown-menu">
+          <ul class="file-dropdown-options">
+            <li>
+              <i class="fa fa-download" aria-hidden="true"></i>
+              <a
+                href="{{ url_for('main.download_folder', folder_id=folder.id) }}"
+                ><button class="download-btn">Download</button></a
+              >
+            </li>
+            <li>
+              <i class="fa fa-trash" aria-hidden="true"></i>
+              <button
+                class="delete-file-btn"
+                data-url="{{ url_for('main.delete_folder', folder_id=folder.id) }}"
+              >
+                Delete Folder
+              </button>
+            </li>
+          </ul>
+        </div>
+        <!-- More icon -->
+      </div>
+      {% endfor %} {% else %}
+      <p>No folders found</p>
+      {% endif %}
+    </div>
+
+    <h4>Files</h4>
+    <div class="gallery-files">
+      {% if files %} {% for file in files %}
+      <div
+        class="file-item no-select pointer"
+        data-url="{{ url_for('main.get_file', file_id=file.id) }}"
+      >
+        <div class="file-item-header">
+          <div class="file-title">
+            <div class="file-icon">
+              <i class="fas fa-file"></i>
+            </div>
+            <div class="file-name">{{ file.filename }}</div>
+            <!-- More icon -->
+          </div>
+          <div class="item-icon">
+            <i class="fas fa-ellipsis-v more-icon"></i>
+          </div>
+          <div class="file-dropdown-menu">
+            <ul class="file-dropdown-options">
+              <li>
+                <i class="fa fa-download" aria-hidden="true"></i>
+                <a href="{{ url_for('main.download_file', file_id=file.id) }}"
+                  ><button class="download-btn">Download</button></a
+                >
+              </li>
+              <li>
+                <i class="fa fa-trash" aria-hidden="true"></i>
+                <button
+                  class="delete-file-btn"
+                  data-url="{{ url_for('main.delete_file', file_id=file.id) }}"
+                >
+                  Delete File
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="file-preview">
+          {% if 'image' in file.mimetype %}
+          <img
+            src="{{ url_for('main.download_thumbnail', file_id=file.id) }}"
+            alt="Image preview"
+          />
+          {% elif 'video' in file.mimetype %}
+          <img
+            src="{{ url_for('main.download_thumbnail', file_id=file.id) }}"
+            alt="Image preview"
+          />
+          <div class="play-button">
+            <i class="fas fa-play-circle"></i>
+          </div>
+          {% else %}
+          <div class="file-preview-placeholder"></div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %} {% else %}
+      <p>No files found</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    let page = {{ page + 1 }};
+    const galleryView = document.querySelector(".gallery-view");
+    const galleryFilesContainer = document.querySelector(".gallery-files");
+    const folderId = "{{ folder_data[-1][1] if folder_data else '' }}";
+    let isLoading = false;
+    let retryTimeout = 5000; // Time to wait before retrying on failure
+
+    // Debounce utility function
+    function debounce(func, wait) {
+      let timeout;
+      return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+      };
+    }
+
+    function addEventListeners() {
+      const fileItems = document.querySelectorAll(".file-item");
+      const folderItems = document.querySelectorAll(".folder-item");
+      const fileDropdownMenus = document.querySelectorAll(".file-dropdown-menu");
+      const deleteFileButtons = document.querySelectorAll(".delete-file-btn");
+
+      fileItems.forEach(item => {
+        item.removeEventListener("dblclick", handleFileDoubleClick);
+        item.removeEventListener("click", handleFileClick);
+      });
+      folderItems.forEach(item => {
+        item.removeEventListener("dblclick", handleFolderDoubleClick);
+        item.removeEventListener("click", handleFileClick);
+      });
+      deleteFileButtons.forEach(button => {
+        button.removeEventListener("click", handleDeleteFile);
+      });
+      document.querySelectorAll(".item-icon").forEach(icon => {
+        icon.removeEventListener("click", handleItemIconClick);
+      });
+      document.removeEventListener("click", handleDocumentClick);
+
+      fileItems.forEach(item => {
+        item.addEventListener("dblclick", handleFileDoubleClick);
+        item.addEventListener("click", handleFileClick);
+      });
+      folderItems.forEach(item => {
+        item.addEventListener("dblclick", handleFolderDoubleClick);
+        item.addEventListener("click", handleFileClick);
+      });
+      deleteFileButtons.forEach(button => {
+        button.addEventListener("click", handleDeleteFile);
+      });
+      document.querySelectorAll(".item-icon").forEach(icon => {
+        icon.addEventListener("click", handleItemIconClick);
+      });
+      document.addEventListener("click", handleDocumentClick);
+    }
+
+    function handleFileDoubleClick() {
+      const url = this.getAttribute("data-url");
+      fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then(response => response.text())
+        .then(html => {
+          const popupContainer = document.createElement("div");
+          popupContainer.innerHTML = html;
+          document.body.appendChild(popupContainer);
+
+          const closeButton = popupContainer.querySelector(".media-close");
+          if (closeButton) {
+            closeButton.addEventListener("click", function () {
+              document.body.removeChild(popupContainer);
+            });
+          }
+        })
+        .catch(error => {
+          console.error("Error fetching file info:", error);
+        });
+    }
+
+    function handleFolderDoubleClick() {
+      const redirectUrl = this.dataset.redirectUrl;
+      window.location.href = redirectUrl; // Redirect to folder URL
+    }
+
+    function handleFileClick() {
+      const allItems = document.querySelectorAll(".file-item, .folder-item");
+      allItems.forEach(item => item.classList.remove("selected"));
+      this.classList.add("selected");
+    }
+
+    function handleDeleteFile(e) {
+      const url = this.getAttribute("data-url");
+      let row = this.closest(".file-item");
+
+      if (url.includes("folder")) {
+        row = this.closest(".folder-item");
+      }
+
+      if (confirm("Are you sure you want to delete this item?")) {
+        fetch(url, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then(response => {
+            if (response.ok) {
+              row.remove();
+            } else {
+              alert("Failed to delete item.");
+            }
+          })
+          .catch(error => {
+            console.error("Error:", error);
+            alert("Failed to delete item.");
+          });
+      }
+    }
+
+    function handleItemIconClick(e) {
+      e.stopPropagation();
+      const dropdownMenu = this.nextElementSibling;
+      const isVisible = dropdownMenu.style.display === "block";
+      const fileDropdownMenus = document.querySelectorAll(".file-dropdown-menu");
+      fileDropdownMenus.forEach(menu => (menu.style.display = "none")); // Hide all menus
+      dropdownMenu.style.display = isVisible ? "none" : "block"; // Toggle visibility
+    }
+
+    function handleDocumentClick(e) {
+      if (!e.target.closest(".file-item") && !e.target.closest(".folder-item")) {
+        document.querySelectorAll(".file-item, .folder-item").forEach(item => item.classList.remove("selected"));
+      }
+      if (!e.target.closest(".file-dropdown-menu")) {
+        document.querySelectorAll(".file-dropdown-menu").forEach(menu => (menu.style.display = "none"));
+      }
+    }
+
+    function loadMoreFiles() {
+      if (isLoading) return;
+      isLoading = true;
+
+      fetch(`/gallery?folder_id=${folderId}&page=${page}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok.');
+          }
+          return response.text();
+        })
+        .then(html => {
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = html;
+
+          const newFiles = tempDiv.querySelectorAll('.file-item');
+          if (newFiles) {
+            newFiles.forEach(file => {
+              galleryFilesContainer.appendChild(file);
+            });
+          }
+
+          addEventListeners();
+          page += 1;
+          isLoading = false;
+        })
+        .catch(error => {
+          console.error('Error loading more files:', error);
+          isLoading = false;
+          setTimeout(loadMoreFiles, retryTimeout); // Retry after a delay
+        });
+    }
+
+    const debouncedLoadMoreFiles = debounce(loadMoreFiles, 200);
+
+    function handleScroll() {
+      if (
+        galleryView.scrollTop + galleryView.clientHeight >=
+        galleryView.scrollHeight - 2
+      ) {
+        console.log("Loading more files...");
+        debouncedLoadMoreFiles();
+      }
+    }
+
+    galleryView.addEventListener("scroll", handleScroll);
+
+    addEventListeners();
+  });
+</script>
+{% endblock %}
