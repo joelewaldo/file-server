@@ -29,6 +29,15 @@ def download_file(file_id):
 def download_thumbnail(file_id):
   return download.download_thumbnail(file_id)
 
+@main_bp.route('/download_preview/<int:file_id>', methods=['GET'])
+@login_required
+def download_preview(file_id):
+  return download.download_preview(file_id)
+
+@main_bp.route('/download_text_preview/<int:file_id>', methods=['GET'])
+def download_text_preview(file_id):
+  return download.download_text_preview(file_id)
+
 @main_bp.route('/download_folder/<int:folder_id>', methods=['GET'])
 @login_required
 def download_folder(folder_id):
@@ -159,7 +168,7 @@ def get_file(file_id):
     mime_type = file.mimetype
         
     # Check if it's an image or video
-    if mime_type and ('image' in mime_type or 'video' in mime_type):
+    if mime_type and ('image' in mime_type or 'video' in mime_type or 'audio' in mime_type or 'text' in mime_type or 'pdf' in mime_type):
       return render_template('file_view.html', file=file, mime_type=mime_type, file_extension=file.filename.split('.')[-1].lower())
     else:
       # If it's not an image or video, render a simple page

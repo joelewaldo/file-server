@@ -17,7 +17,7 @@
           <p>No recent searches</p>
           <!-- Add recent searches dynamically here -->
         </div>
-        <div id="search-results" class="search-results" style="display: none;">
+        <div id="search-results" class="search-results" style="display: none">
           <!-- Search results will be dynamically added here -->
         </div>
         <button id="advanced-search-btn">Advanced Search</button>
@@ -156,7 +156,8 @@
           </div>
         </div>
         <div class="file-preview">
-          {% if 'image' in file.mimetype %}
+          {% if 'image' in file.mimetype or 'text' in file.mimetype or 'pdf' in
+          file.mimetype %}
           <img
             src="{{ url_for('main.download_thumbnail', file_id=file.id) }}"
             alt="Image preview"

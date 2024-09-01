@@ -16,6 +16,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   </head>
 
   <body>
@@ -262,28 +263,15 @@
         fileContainer.appendChild(progressWrapper);
         gallery.appendChild(fileContainer);
 
-        fetch(url, {
-          method: "POST",
-          body: formData,
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            console.log("File uploaded successfully:", data);
-            progressBar.value = 100;
-          })
-          .catch((error) => {
-            console.error("Error uploading file:", error);
-            progressBar.value = 0; // Reset on error
-          });
+        const config = {
+          onUploadProgress: function (progressEvent) {
+            const percentCompleted =
+              (progressEvent.loaded / progressEvent.total) * 100;
+            progressBar.value = percentCompleted;
+          },
+        };
 
-        // Simulate progress for the sake of the example (remove this in a real implementation)
-        let simulateProgress = setInterval(() => {
-          if (progressBar.value < 100) {
-            progressBar.value += 10;
-          } else {
-            clearInterval(simulateProgress);
-          }
-        }, 100);
+        axios.post(url, formData, config);
       }
 
       const uploadFolderBtn = document.getElementById("upload-folder-btn");
@@ -538,12 +526,12 @@
     </script>
     <script>
       // Search bar functionality
-      document.addEventListener('DOMContentLoaded', function () {
-        const searchBar = document.getElementById('search-bar');
-        const searchDropdown = document.getElementById('search-dropdown');
-        const searchResultsDiv = document.getElementById('search-results');
-        const searchHistoryDiv = document.getElementById('search-history');
-        
+      document.addEventListener("DOMContentLoaded", function () {
+        const searchBar = document.getElementById("search-bar");
+        const searchDropdown = document.getElementById("search-dropdown");
+        const searchResultsDiv = document.getElementById("search-results");
+        const searchHistoryDiv = document.getElementById("search-history");
+
         function debounce(func, delay) {
           let timer;
           return function (...args) {
@@ -552,49 +540,57 @@
             timer = setTimeout(() => func.apply(context, args), delay);
           };
         }
-    
+
         const performSearch = debounce(function () {
           const query = searchBar.value.trim();
-    
+
           if (query.length > 0) {
             fetch(`/search?query=${encodeURIComponent(query)}&per_page=5`)
-              .then(response => response.json())
-              .then(data => {
+              .then((response) => response.json())
+              .then((data) => {
                 // Clear previous results
-                searchResultsDiv.innerHTML = '';
-    
+                searchResultsDiv.innerHTML = "";
+
                 // If there are results, display them
                 if (data.results && data.results.length > 0) {
-                  searchResultsDiv.style.display = 'block';
-                  searchHistoryDiv.style.display = 'none';
-    
-                  data.results.forEach(item => {
-                    const resultItem = document.createElement('div');
-                    resultItem.classList.add('search-result-item');
-    
+                  searchResultsDiv.style.display = "block";
+                  searchHistoryDiv.style.display = "none";
+
+                  data.results.forEach((item) => {
+                    const resultItem = document.createElement("div");
+                    resultItem.classList.add("search-result-item");
+
                     // Add folder or file icon
-                    const icon = document.createElement('i');
-                    icon.classList.add('fas', item.type === 'folder' ? 'fa-folder' : 'fa-file');
+                    const icon = document.createElement("i");
+                    icon.classList.add(
+                      "fas",
+                      item.type === "folder" ? "fa-folder" : "fa-file"
+                    );
                     resultItem.appendChild(icon);
-    
+
                     // Add name of the item
-                    const nameSpan = document.createElement('span');
+                    const nameSpan = document.createElement("span");
                     nameSpan.textContent = item.name;
                     resultItem.appendChild(nameSpan);
-    
+
                     // Create actions container
-                    const actionsDiv = document.createElement('div');
-                    actionsDiv.classList.add('search-result-actions');
-    
+                    const actionsDiv = document.createElement("div");
+                    actionsDiv.classList.add("search-result-actions");
+
                     // Add delete button
-                    const deleteButton = document.createElement('i');
-                    deleteButton.classList.add('fas', 'fa-trash');
-                    deleteButton.title = 'Delete';
-                    deleteButton.addEventListener('click', function(event) {
+                    const deleteButton = document.createElement("i");
+                    deleteButton.classList.add("fas", "fa-trash");
+                    deleteButton.title = "Delete";
+                    deleteButton.addEventListener("click", function (event) {
                       event.stopPropagation();
                       // Handle delete action
-                      const url = item.type == 'file' ? `/delete/${item.id}` :  `/delete_folder/${item.id}`;
-                      if (confirm("Are you sure you want to delete this item?")) {
+                      const url =
+                        item.type == "file"
+                          ? `/delete/${item.id}`
+                          : `/delete_folder/${item.id}`;
+                      if (
+                        confirm("Are you sure you want to delete this item?")
+                      ) {
                         fetch(url, {
                           method: "DELETE",
                           headers: {
@@ -615,23 +611,23 @@
                       }
                     });
                     actionsDiv.appendChild(deleteButton);
-    
+
                     // Add download button
-                    const downloadButton = document.createElement('i');
-                    downloadButton.classList.add('fas', 'fa-download');
-                    downloadButton.title = 'Download';
-                    downloadButton.addEventListener('click', function(event) {
+                    const downloadButton = document.createElement("i");
+                    downloadButton.classList.add("fas", "fa-download");
+                    downloadButton.title = "Download";
+                    downloadButton.addEventListener("click", function (event) {
                       event.stopPropagation();
                       // Handle download action
-                      console.log('Download:', item);
+                      console.log("Download:", item);
                       window.location.href = `/download/${item.id}`;
                     });
                     actionsDiv.appendChild(downloadButton);
-    
+
                     resultItem.appendChild(actionsDiv);
-    
-                    resultItem.addEventListener('click', function() {
-                      if (item.type === 'folder') {
+
+                    resultItem.addEventListener("click", function () {
+                      if (item.type === "folder") {
                         const url = new URL(window.location.href);
                         url.searchParams.set("folder_id", item.id);
                         window.location.href = url;
@@ -645,15 +641,20 @@
                         })
                           .then((response) => response.text())
                           .then((html) => {
-                            const popupContainer = document.createElement("div");
+                            const popupContainer =
+                              document.createElement("div");
                             popupContainer.innerHTML = html;
                             document.body.appendChild(popupContainer);
-    
-                            const closeButton = popupContainer.querySelector(".media-close");
+
+                            const closeButton =
+                              popupContainer.querySelector(".media-close");
                             if (closeButton) {
-                              closeButton.addEventListener("click", function () {
-                                document.body.removeChild(popupContainer);
-                              });
+                              closeButton.addEventListener(
+                                "click",
+                                function () {
+                                  document.body.removeChild(popupContainer);
+                                }
+                              );
                             }
                           })
                           .catch((error) => {
@@ -661,27 +662,27 @@
                           });
                       }
                     });
-    
+
                     // Append the result item to the results div
                     searchResultsDiv.appendChild(resultItem);
                   });
                 } else {
                   // If no results, hide the results div and show the history
-                  searchResultsDiv.style.display = 'none';
-                  searchHistoryDiv.style.display = 'block';
+                  searchResultsDiv.style.display = "none";
+                  searchHistoryDiv.style.display = "block";
                 }
               })
-              .catch(error => {
-                console.error('Error fetching search results:', error);
+              .catch((error) => {
+                console.error("Error fetching search results:", error);
               });
           } else {
             // If the query is empty, hide the results div and show the history
-            searchResultsDiv.style.display = 'none';
-            searchHistoryDiv.style.display = 'block';
+            searchResultsDiv.style.display = "none";
+            searchHistoryDiv.style.display = "block";
           }
         }, 300); // Delay of 300ms
-    
-        searchBar.addEventListener('input', performSearch);
+
+        searchBar.addEventListener("input", performSearch);
       });
     </script>
   </body>
