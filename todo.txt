@@ -1,0 +1,20 @@
+- Add settings functionality
+  - toggle hashing
+    - when hashing is toggled from off to on, all files with the same hash will not be added
+    - when hashing is toggled from on to off, hashing is ignored and files with the same hash are allowed to be added
+  - multiple file storages
+    - user can select which file storage they want to connect to and use. databases should be shared amongst all storages.
+    - these are initialized in settings before the server is launched.
+- add functionality for advanced searching
+  - create filters
+    - sort by data
+    - sort by file size
+    - sort alphabetically
+    - search by file type
+    - search by location
+- create a bigger search page.
+- investigate __init__.py filename bug
+- Add different icons for different filetypes in file and gallery view
+- add rename functionality
+- add move functionality
+- add an error message for files that are unable to be added.
