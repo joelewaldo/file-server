@@ -51,8 +51,8 @@ def upload_file():
     existing_file = File.query.filter_by(file_hash=file_hash).first()
     if existing_file:
       return jsonify({'message': f'File already exists with ID {existing_file.id}', 'filename': existing_file.filename}), 200
-    
-    filename = secure_filename(filename)
+
+    secured_filename = secure_filename(filename)
 
     parent_folder = None
     if parent_id:
@@ -65,13 +65,12 @@ def upload_file():
       if not os.path.exists(app.config['UPLOAD_FOLDER']):
         os.makedirs(app.config['UPLOAD_FOLDER'])
 
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], secured_filename)
 
     if parent_folder:
-      file_path = os.path.join(app.config['UPLOAD_FOLDER'], *parent_folder.path_stack, filename)
-    
-    # Save the file
-    new_file = File(filename=filename, filepath=file_path, file_hash=file_hash, file_size=file_size, parent_id=parent_id, mimetype=mimetypes.guess_type(filename)[0])
+      file_path = os.path.join(app.config['UPLOAD_FOLDER'], *parent_folder.path_stack, secured_filename)
+  
+    new_file = File(filename=filename, filepath=file_path, file_hash=file_hash, file_size=file_size, parent_id=parent_id, mimetype=mimetypes.guess_type(secured_filename)[0])
     db.session.add(new_file)
     db.session.commit()
 

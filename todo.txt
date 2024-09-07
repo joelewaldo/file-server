@@ -13,7 +13,6 @@
     - search by file type
     - search by location
 - create a bigger search page.
-- investigate __init__.py filename bug
 - Add different icons for different filetypes in file and gallery view
 - add rename functionality
 - add move functionality
