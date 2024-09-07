@@ -456,6 +456,32 @@
             return data.folder_id ? data.folder_id : "";
           }
 
+          async function uploadFile(formData) {
+            try {
+              const response = await fetch("/upload", {
+                method: "POST",
+                body: formData,
+              });
+
+              if (!response.ok) {
+                // Check if the error is a 400 Bad Request
+                if (response.status === 400) {
+                  console.warn("File type not allowed. Skipping the file.");
+                  return; // Skip the file
+                }
+
+                // Handle other error statuses as needed
+                throw new Error(`HTTP error! Status: ${response.status}`);
+              }
+
+              // Process the successful response
+              const result = await response.json();
+              console.log("File uploaded successfully:", result);
+            } catch (error) {
+              console.error("Error uploading file:", error.message);
+            }
+          }
+
           async function processEntry(
             entry,
             parentId = '{{ current_folder.id if current_folder else "" }}'
@@ -502,10 +528,7 @@
             formData.append("file", entry);
             formData.append("parent_id", currentParentId);
 
-            await fetch("/upload", {
-              method: "POST",
-              body: formData,
-            });
+            await uploadFile(formData);
 
             uploadedFiles++;
             updateProgress();
@@ -516,7 +539,7 @@
             await processEntry(item);
           }
           uploadProgress.style.display = "none"; // Hide the progress bar when done
-          window.location.reload();
+          // window.location.reload();
         }
 
         folderInput.addEventListener("change", function () {

@@ -170,6 +170,10 @@
           <div class="play-button">
             <i class="fas fa-play-circle"></i>
           </div>
+          {% elif 'audio' in file.mimetype %}
+          <div class="audio-icon">
+            <i class="fas fa-wave-square"></i>
+          </div>
           {% else %}
           <div class="file-preview-placeholder"></div>
           {% endif %}
