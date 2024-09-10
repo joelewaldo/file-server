@@ -1,0 +1,129 @@
+{% extends "files_base.html" %} {% block content %}
+
+<div class="content">
+  <h1>Settings</h1>
+
+  <div class="form-group">
+    <h2>Upload</h2>
+    <div class="switch-container">
+      <div class="form-description">
+        <span class="sub-text">Hashing</span>
+        <span class="small-text"
+          >Enable unique hashing for future uploads.</span
+        >
+      </div>
+      <input
+        type="checkbox"
+        id="hashing-toggle"
+        class="settings-input"
+        {%
+        if
+        hashing
+        %}
+        checked
+        {%
+        endif
+        %}
+      />
+      <label class="switch" for="hashing-toggle"></label>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <h2>Storage</h2>
+    <div class="dropdown-container">
+      <div class="form-description">
+        <span class="sub-text">Mount points</span>
+        <span class="small-text"
+          >Choose which mount point for the file server.</span
+        >
+      </div>
+      <div class="dropdown">
+        <div class="select">
+          <span class="dropdown-selected">{{ selected_mount_point }}</span>
+          <div class="caret"></div>
+        </div>
+        <ul class="dropdown-menu">
+          {% for mount_point in all_mount_points %}
+          <li
+            class="{% if mount_point.id == selected_mount_point.id %}dropdown-active{% endif %}"
+          >
+            {{ mount_point.name }}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document
+    .getElementById("hashing-toggle")
+    .addEventListener("change", function () {
+      const enabled = this.checked;
+
+      fetch('{{ url_for("main.update_hashing") }}', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ hashing: enabled }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            console.log("Hashing updated successfully!");
+          } else {
+            console.log("Failed to update Hashing.");
+          }
+        });
+    });
+</script>
+<script>
+  const dropdowns = document.querySelectorAll(".dropdown");
+  dropdowns.forEach((dropdown) => {
+    const select = dropdown.querySelector(".select");
+    const caret = dropdown.querySelector(".caret");
+    const menu = dropdown.querySelector(".dropdown-menu");
+    const options = dropdown.querySelectorAll(".dropdown-menu li");
+    const selected = dropdown.querySelector(".dropdown-selected");
+
+    select.addEventListener("click", () => {
+      select.classList.toggle("select-clicked");
+      caret.classList.toggle("caret-rotate");
+      menu.classList.toggle("dropdown-menu-open");
+    });
+
+    options.forEach((option) => {
+      option.addEventListener("click", () => {
+        fetch('{{ url_for("main.update_preferred_upload_folder") }}', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ preferred_upload_folder: option.innerText }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              console.log("Mount point updated successfully!");
+            } else {
+              console.log("Failed to update mount point.");
+            }
+          });
+        selected.innerText = option.innerText;
+        select.classList.remove("select-clicked");
+        caret.classList.remove("caret-rotate");
+        menu.classList.remove("dropdown-menu-open");
+        options.forEach((option) => {
+          option.classList.remove("dropdown-active");
+        });
+
+        option.classList.add("dropdown-active");
+      });
+    });
+  });
+</script>
+
+{% endblock %}

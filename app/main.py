@@ -2,7 +2,8 @@ from flask import current_app as app, request, jsonify, send_from_directory, ren
 from flask_login import login_required, current_user
 import os
 from .models.file_model import File, Folder
-from .core import upload, delete, download, search as sh, create_folder as cf
+from .core import settings, upload, delete, download, search as sh, create_folder as cf
+from .utils import get_upload_folder_id, get_upload_folder
 
 main_bp = Blueprint('main', __name__)
 
@@ -17,7 +18,7 @@ def test():
 @main_bp.route('/upload', methods=['POST'])
 @login_required
 def upload_file():
-  return upload.upload_file()
+  return upload.upload_file(current_user)
 
 @main_bp.route('/download/<int:file_id>', methods=['GET'])
 @login_required
@@ -62,11 +63,21 @@ def delete_folder(folder_id):
 @login_required
 def search():
   return sh.search()
+
+@main_bp.route('/update_hashing', methods=['POST'])
+@login_required
+def update_hashing():
+  return settings.update_hashing(current_user)
+
+@main_bp.route('/update_preferred_upload_folder', methods=['POST'])
+@login_required
+def update_preferred_upload_folder():
+  return settings.update_preferred_upload_folder(current_user)
   
 @main_bp.route('/files', methods=['GET'])
 @login_required
 def list_files():
-  folder_id = request.args.get('folder_id', None, type=int)
+  folder_id = request.args.get('folder_id', get_upload_folder_id(current_user), type=int)
 
   # Initialize stacks
   folder_stack = []
@@ -113,7 +124,7 @@ def list_files():
 @main_bp.route('/gallery', methods=['GET'])
 @login_required
 def gallery():
-  folder_id = request.args.get('folder_id', None, type=int)
+  folder_id = request.args.get('folder_id', get_upload_folder_id(current_user), type=int)
   page = request.args.get('page', 1, type=int)
   per_page = 20  # Number of files per page
 
@@ -176,12 +187,12 @@ def get_file(file_id):
   else:
     return jsonify({'error': 'File not found'}), 404
   
-@main_bp.route('/view/<int:file_id>')
-@login_required
-def view(file_id):
-  file = File.query.get(file_id)
-  print(file.filepath)
-  return send_from_directory("../" + app.config['UPLOAD_FOLDER'], file.filepath, download_name=file.filename)
+# @main_bp.route('/view/<int:file_id>')
+# @login_required
+# def view(file_id):
+#   file = File.query.get(file_id)
+#   print(file.filepath)
+#   return send_from_directory("../" + get_upload_folder(current_user), file.filepath, download_name=file.filename)
 
 @main_bp.route('/folder', methods=['GET'])
 @login_required
@@ -201,3 +212,11 @@ def get_folder_by_name():
     return jsonify({'folder_id': folder.id})
   else:
     return jsonify({'message': 'Folder not found'}), 200
+  
+@main_bp.route('/settings', methods=['GET'])
+@login_required
+def settings_page():
+  hashing = current_user.settings.hashing
+  selected_mount_point = get_upload_folder(current_user)
+  all_mount_points = Folder.query.filter_by(parent_id=None).all()
+  return render_template('settings.html', hashing=hashing, selected_mount_point=selected_mount_point, all_mount_points=all_mount_points)

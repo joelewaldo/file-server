@@ -136,7 +136,7 @@ def add_folder_to_zip(folder, zip_file, base_path=""):
   # Add files in the current folder
   files = File.query.filter_by(parent_id=folder.id).all()
   for file in files:
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filepath)
+    file_path = os.path.join(folder.mount_point, file.filepath)
     arcname = os.path.join(base_path, file.filename)
     zip_file.write(file_path, arcname=arcname)
   

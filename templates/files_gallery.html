@@ -68,8 +68,8 @@
 
   <!-- Breadcrumb Navigation -->
   <div class="breadcrumb">
-    <a href="{{ url_for('main.gallery') }}">Home</a>
-    {% if folder_data %} {% for name, id in folder_data %} >
+    {% if folder_data %} {% for name, id in folder_data %} {% if not loop.first
+    %}> {% endif %}
     <a href="{{ url_for('main.gallery', folder_id=id) }}">{{ name }}</a>
     {% endfor %} {% endif %}
   </div>

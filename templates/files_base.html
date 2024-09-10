@@ -8,6 +8,7 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/file_style.css') }}"
     />
+    <link rel="stylesheet" href="/static/css/settings.css" />
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/gallery_style.css') }}"
@@ -27,7 +28,12 @@
             <a href="#"><i class="fas fa-plus"></i> New</a>
           </li>
           <li>
-            <a href="#"><i class="fas fa-cog"></i> Settings</a>
+            <a href="/files"
+              ><i class="fa fa-home" style="font-size: 18px"></i> Home</a
+            >
+          </li>
+          <li>
+            <a href="/settings"><i class="fas fa-cog"></i> Settings</a>
           </li>
         </ul>
       </div>

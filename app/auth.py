@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify, render_template, redirect, url_fo
 from flask_login import login_user, login_required, logout_user
 from datetime import datetime
 from pytz import utc
-from .models.user_model import User
+from .models.user_model import User, UserSettings
 from .extensions import db
 
 auth_bp = Blueprint('auth', __name__)
@@ -18,6 +18,10 @@ def register():
     new_user = User(username=data['username'], name=data['name'])
     new_user.set_password(data['password'])
     db.session.add(new_user)
+    db.session.commit()
+
+    new_user_settings = UserSettings(user_id=new_user.id)
+    db.session.add(new_user_settings)
     db.session.commit()
     return redirect(url_for('auth.login'))
 

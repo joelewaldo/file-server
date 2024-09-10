@@ -1,7 +1,17 @@
 from datetime import datetime, timedelta, timezone
 from flask_login import UserMixin
-from sqlalchemy import func
 from ..extensions import db, bcrypt
+
+class UserSettings(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  user_id = db.Column(db.Integer, db.ForeignKey('user.id'), unique=True, nullable=False)
+  user = db.relationship('User', back_populates='settings')
+  
+  # Settings
+  hashing = db.Column(db.Boolean, default=False)
+  preferred_upload_folder = db.Column(db.String(255), nullable=True)
+  # notifications_enabled = db.Column(db.Boolean, default=True)
+  # language = db.Column(db.String(20), default='en')
 
 class User(UserMixin, db.Model):
   id = db.Column(db.Integer, primary_key=True)
@@ -11,6 +21,8 @@ class User(UserMixin, db.Model):
   api_key = db.Column(db.String(128), unique=True, nullable=True)
   api_key_expiration = db.Column(db.DateTime(timezone=True), nullable=True)
   created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=datetime.now(timezone.utc))
+
+  settings = db.relationship('UserSettings', back_populates='user', uselist=False)
 
   def set_password(self, password):
     self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')

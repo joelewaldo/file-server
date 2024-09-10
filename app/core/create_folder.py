@@ -1,7 +1,6 @@
 import os
 from flask import current_app as app, request, jsonify, send_from_directory
 from app.models.file_model import Folder
-from sqlalchemy.exc import IntegrityError
 from ..extensions import db
 
 def create_folder():
@@ -22,19 +21,20 @@ def create_folder():
   # Fetch current folder stack and append the new folder
 
   if not parent_id:
-    new_path_stack = [folder_name]
+    return jsonify({'error': 'Can not create folder in this directory'}), 400
+    # new_path_stack = [folder_name]
     
-    # Create the new folder in the database
-    new_folder = Folder(name=folder_name, parent_id=None, path_stack=new_path_stack)
-    db.session.add(new_folder)
-    db.session.commit()
+    # # Create the new folder in the database
+    # new_folder = Folder(name=folder_name, parent_id=None, path_stack=new_path_stack)
+    # db.session.add(new_folder)
+    # db.session.commit()
     
-    # Create the folder in the filesystem
-    new_folder_path = os.path.join(app.config['UPLOAD_FOLDER'], *new_path_stack)
-    if not os.path.exists(new_folder_path):
-      os.makedirs(new_folder_path)
+    # # Create the folder in the filesystem
+    # new_folder_path = os.path.join(app.config['UPLOAD_FOLDER'], *new_path_stack)
+    # if not os.path.exists(new_folder_path):
+    #   os.makedirs(new_folder_path)
     
-    return jsonify({'message': 'Folder created successfully', 'folder_id': new_folder.id}), 200
+    # return jsonify({'message': 'Folder created successfully', 'folder_id': new_folder.id}), 200
 
   parent_folder = Folder.query.get(parent_id)
   if not parent_folder:
@@ -44,12 +44,12 @@ def create_folder():
   new_path_stack.append(folder_name)
   
   # Create the new folder in the database
-  new_folder = Folder(name=folder_name, parent_id=parent_id, path_stack=new_path_stack)
+  new_folder = Folder(name=folder_name, parent_id=parent_id, path_stack=new_path_stack, mount_point=parent_folder.mount_point)
   db.session.add(new_folder)
   db.session.commit()
   
   # Create the folder in the filesystem
-  new_folder_path = os.path.join(app.config['UPLOAD_FOLDER'], *new_path_stack)
+  new_folder_path = os.path.join(parent_folder.mount_point, *new_path_stack)
   if not os.path.exists(new_folder_path):
     os.makedirs(new_folder_path)
   

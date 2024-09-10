@@ -23,7 +23,10 @@ def delete_folder(folder_id):
   if not folder:
     return jsonify({'error': 'Folder not found'}), 404
   
-  folder_path = os.path.join(app.config['UPLOAD_FOLDER'], *folder.path_stack)
+  if not folder.parent_id:
+    return jsonify({'error': 'Unable to delete a mount point'}), 400
+  
+  folder_path = os.path.join(folder.mount_point, *folder.path_stack)
   
   # Recursively delete files and subfolders
   if os.path.exists(folder_path):

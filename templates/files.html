@@ -17,7 +17,7 @@
           <p>No recent searches</p>
           <!-- Add recent searches dynamically here -->
         </div>
-        <div id="search-results" class="search-results" style="display: none;">
+        <div id="search-results" class="search-results" style="display: none">
           <!-- Search results will be dynamically added here -->
         </div>
         <button id="advanced-search-btn">Advanced Search</button>
@@ -68,8 +68,8 @@
 
   <!-- Breadcrumb Navigation -->
   <div class="breadcrumb">
-    <a href="{{ url_for('main.list_files') }}">Home</a>
-    {% if folder_data %} {% for name, id in folder_data %} >
+    {% if folder_data %} {% for name, id in folder_data %} {% if not loop.first
+    %}> {% endif %}
     <a href="{{ url_for('main.list_files', folder_id=id) }}">{{ name }}</a>
     {% endfor %} {% endif %}
   </div>

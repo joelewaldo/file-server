@@ -1,0 +1,135 @@
+.switch-container {
+  width: 100%;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 15px;
+}
+
+.form-description {
+  display: flex;
+  flex-direction: column;
+}
+
+.switch {
+  background-color: #d2d2d2;
+  width: 50px;
+  height: 25px;
+  border-radius: 50px;
+  cursor: pointer;
+  position: relative;
+}
+
+.switch::before {
+  position: absolute;
+  content: "";
+  background-color: #fff;
+  width: 18px;
+  height: 18px;
+  border-radius: 50px;
+  top: 50%;
+  left: 4px;
+  transform: translateY(-50%);
+  transition: left 0.2s;
+}
+
+input:checked + .switch {
+  background-color: #34b233;
+}
+
+input:checked + .switch::before {
+  left: 28px;
+}
+
+.settings-input {
+  display: none;
+}
+
+.dropdown-container {
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dropdown {
+  min-width: 150px;
+  position: relative;
+}
+
+.dropdown * {
+  box-sizing: border-box;
+}
+
+.select {
+  background: #c9c9c9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* border: 1px #5cbcff solid; */
+  border-radius: 5px;
+  padding: 10px 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.select-clicked {
+  box-shadow: 0 0 1px #a9c1d1;
+}
+
+.select:hover {
+  background-color: #c0cad1;
+}
+
+.caret {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid black;
+  transition: 0.3s;
+}
+
+.caret-rotate {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  list-style: none;
+  padding: 2px 5px;
+  background: #dbdbdb;
+  border: 1px #c7c7c7 solid;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  color: #525252;
+  position: absolute;
+  top: 25px;
+  left: 50%;
+  width: 100%;
+  transform: translateX(-50%);
+  opacity: 0;
+  display: none;
+  transition: 0.2s;
+  z-index: 1;
+}
+
+.dropdown-menu li {
+  padding: 10px 6px;
+  margin: 5px 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.dropdown-menu li:hover {
+  background: #c7c7c7;
+}
+
+.dropdown-active {
+  background: #bfbfbf;
+}
+
+.dropdown-menu-open {
+  display: block;
+  opacity: 1;
+}

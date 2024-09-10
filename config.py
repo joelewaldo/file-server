@@ -6,7 +6,7 @@ load_dotenv()
 
 class Config:
   SECRET_KEY = os.getenv('SECRET_KEY', 'TOPSECRETKEY')
-  UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', 'uploads/')
+  UPLOAD_FOLDERS = os.getenv('UPLOAD_FOLDERS', 'uploads/').split(",")
   CACHE_FOLDER = os.getenv('CACHE_FOLDER', 'cache/')
   ALLOWED_EXTENSIONS = {
     # Text extensions

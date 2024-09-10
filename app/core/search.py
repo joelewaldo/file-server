@@ -25,6 +25,7 @@ def search():
         Folder.name.label('name'),
         Folder.created_at.label('created_at'),
         Folder.parent_id.label('parent_id'),
+        Folder.mount_point.label('mount_point'),  # Include mount_point for folders
         db.null().label('file_size'),  # Placeholder for file size, null for folders
         db.null().label('mimetype'),  # Placeholder for mimetype, null for folders
         db.literal('folder').label('type')  # Use db.literal for constant value
@@ -34,6 +35,7 @@ def search():
             File.filename.label('name'),
             File.upload_date.label('created_at'),
             File.parent_id.label('parent_id'),
+            db.null().label('mount_point'),  # Placeholder for mount_point, null for files
             File.file_size.label('file_size'),
             File.mimetype.label('mimetype'),
             db.literal('file').label('type')  # Use db.literal for constant value
@@ -53,7 +55,11 @@ def search():
             'created_at': item.created_at.isoformat(),  # Convert to ISO format for JSON serialization
             'parent_id': item.parent_id,
         }
-        if item.type == 'file':
+        if item.type == 'folder':
+            result.update({
+                'mount_point': item.mount_point,
+            })
+        else:  # For files
             result.update({
                 'file_size': item.file_size,
                 'mimetype': item.mimetype,

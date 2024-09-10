@@ -25,7 +25,7 @@ def get_file_hash_and_size(file):
   file.seek(0)  # Reset file pointer to the beginning
   return hasher.hexdigest(), file_size
 
-def upload_file():
+def upload_file(current_user):
   parent_id = request.form.get('parent_id')
   file = request.files['file']
 
@@ -49,7 +49,7 @@ def upload_file():
     
     # Check if file already exists in the database
     existing_file = File.query.filter_by(file_hash=file_hash).first()
-    if existing_file:
+    if current_user.settings.hashing and existing_file:
       return jsonify({'message': f'File already exists with ID {existing_file.id}', 'filename': existing_file.filename}), 200
 
     secured_filename = secure_filename(filename)
@@ -62,13 +62,16 @@ def upload_file():
       return jsonify({'error': 'Unknown Folder ID'}), 400
     
     if not parent_folder and not parent_id:
-      if not os.path.exists(app.config['UPLOAD_FOLDER']):
-        os.makedirs(app.config['UPLOAD_FOLDER'])
+      return jsonify({'error': 'Can not create file in this directory'}), 400
+    
+    # if not parent_folder and not parent_id:
+    #   if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    #     os.makedirs(app.config['UPLOAD_FOLDER'])
 
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], secured_filename)
+    file_path = os.path.join(parent_folder.mount_point, *parent_folder.path_stack, secured_filename)
 
-    if parent_folder:
-      file_path = os.path.join(app.config['UPLOAD_FOLDER'], *parent_folder.path_stack, secured_filename)
+    # if parent_folder:
+    #   file_path = os.path.join(get_upload_folder(current_user), *parent_folder.path_stack, secured_filename)
   
     new_file = File(filename=filename, filepath=file_path, file_hash=file_hash, file_size=file_size, parent_id=parent_id, mimetype=mimetypes.guess_type(secured_filename)[0])
     db.session.add(new_file)
