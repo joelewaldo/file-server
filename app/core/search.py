@@ -1,6 +1,5 @@
 from flask import current_app as app, request, jsonify, send_from_directory
 from app.models.file_model import Folder, File
-from app.models.user_model import User, UserSettings
 from app.models.search_model import SearchHistory
 from ..extensions import db
 
@@ -215,3 +214,12 @@ def get_recent_searches(current_user):
         return jsonify(recent_searches_list)
 
     return jsonify([]), 404
+
+def delete_search_history(current_user):
+    try:
+        SearchHistory.query.filter_by(user_id=current_user.id).delete()
+        db.session.commit()
+        return jsonify({'success': 'Successfully deleted search history.'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f"An error occurred while deleting search history: {str(e)}"}), 500

@@ -10,4 +10,4 @@ class SearchHistory(db.Model):
   timestamp = db.Column(db.DateTime(timezone=True), nullable=False, default=datetime.now(timezone.utc))
 
   def __repr__(self):
-    return f'<SearchHistory {self.whatthefuck} by User {self.user_id}>'
+    return f'<SearchHistory {self.term} by User {self.user_id}>'

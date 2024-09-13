@@ -185,6 +185,80 @@
         </div>
       </div>
     </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container" class="notification-container"></div>
+    <script>
+      function createNotificationPopup(
+        title,
+        description,
+        icon = "⚠️",
+        duration = 3000
+      ) {
+        // Create the popup element
+        const notificationPopup = document.createElement("div");
+        notificationPopup.classList.add("notification-popup", "hidden");
+
+        // Create icon element
+        const notificationIcon = document.createElement("span");
+        notificationIcon.classList.add("notification-icon");
+        notificationIcon.innerHTML = icon;
+
+        // Create content container
+        const contentContainer = document.createElement("div");
+        contentContainer.classList.add("notification-content");
+
+        // Create title element
+        const notificationTitle = document.createElement("div");
+        notificationTitle.classList.add("notification-title");
+        notificationTitle.textContent = title;
+
+        // Create description element
+        const notificationDescription = document.createElement("div");
+        notificationDescription.classList.add("notification-description");
+        notificationDescription.textContent = description;
+
+        // Append title and description to content container
+        contentContainer.appendChild(notificationTitle);
+        contentContainer.appendChild(notificationDescription);
+
+        // Create close button
+        const closeButton = document.createElement("span");
+        closeButton.classList.add("notification-close");
+        closeButton.innerHTML = "&times;";
+        closeButton.addEventListener("click", function () {
+          removeNotificationPopup(notificationPopup);
+        });
+
+        // Append icon, content, and close button to the popup
+        notificationPopup.appendChild(notificationIcon);
+        notificationPopup.appendChild(contentContainer);
+        notificationPopup.appendChild(closeButton);
+
+        // Add the popup to the notification container
+        const container = document.getElementById("notification-container");
+        container.appendChild(notificationPopup);
+
+        // Show the popup with animation
+        setTimeout(function () {
+          notificationPopup.classList.remove("hidden");
+          notificationPopup.classList.add("show");
+        }, 100);
+
+        // Automatically remove the popup after the specified duration
+        setTimeout(function () {
+          removeNotificationPopup(notificationPopup);
+        }, duration);
+      }
+
+      function removeNotificationPopup(notificationPopup) {
+        notificationPopup.classList.remove("show");
+        notificationPopup.classList.add("hidden");
+        setTimeout(function () {
+          notificationPopup.remove();
+        }, 300); // Match the transition duration
+      }
+    </script>
     <script>
       document
         .getElementById("search-bar")
@@ -474,7 +548,24 @@
           },
         };
 
-        axios.post(url, formData, config);
+        axios
+          .post(url, formData, config)
+          .then(function (response) {
+            // On successful upload
+            createNotificationPopup(
+              "Upload Successful",
+              "Your file has been uploaded successfully.",
+              '<i class="fas fa-check-circle"></i>'
+            );
+          })
+          .catch(function (error) {
+            // On upload failure
+            createNotificationPopup(
+              "Upload Failed",
+              "There was an error uploading your file. Please try again.",
+              '<i class="fas fa-exclamation-circle"></i>'
+            );
+          });
       }
 
       const uploadFolderBtn = document.getElementById("upload-folder-btn");
@@ -673,10 +764,21 @@
                 // Check if the error is a 400 Bad Request
                 if (response.status === 400) {
                   console.warn("File type not allowed. Skipping the file.");
+                  createNotificationPopup(
+                    "Warning",
+                    "File type not allowed. Skipping the file.",
+                    "⚠️"
+                  );
                   return; // Skip the file
                 }
 
                 // Handle other error statuses as needed
+                createNotificationPopup(
+                  "Error",
+                  `HTTP error! Status: ${response.status}`,
+                  "❌",
+                  5000
+                );
                 throw new Error(`HTTP error! Status: ${response.status}`);
               }
 
@@ -684,6 +786,12 @@
               const result = await response.json();
               console.log("File uploaded successfully:", result);
             } catch (error) {
+              createNotificationPopup(
+                "Error",
+                "Failed to upload file.",
+                "❌",
+                5000
+              );
               console.error("Error uploading file:", error.message);
             }
           }
@@ -721,6 +829,11 @@
                     const data = await response.json();
                     currentParentId = data.folder_id;
                   } else {
+                    createNotificationPopup(
+                      "Warning",
+                      "Failed to create folder!",
+                      "⚠️"
+                    );
                     console.error("Failed to create folder:", folder);
                     return;
                   }
@@ -828,14 +941,29 @@
                         })
                           .then((response) => {
                             if (response.ok) {
+                              createNotificationPopup(
+                                "Success",
+                                "Successfully deleted item!",
+                                "✅"
+                              );
                               window.location.reload();
                             } else {
-                              alert("Failed to delete item.");
+                              createNotificationPopup(
+                                "Error",
+                                "Failed to delete item!",
+                                "❌",
+                                5000
+                              );
                             }
                           })
                           .catch((error) => {
                             console.error("Error:", error);
-                            alert("Failed to delete item.");
+                            createNotificationPopup(
+                              "Error",
+                              "Failed to delete item!",
+                              "❌",
+                              5000
+                            );
                           });
                       }
                     });

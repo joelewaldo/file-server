@@ -175,6 +175,12 @@
               }
             })
             .catch((error) => {
+              createNotificationPopup(
+                "Error",
+                "Failed to fetch file info.",
+                "❌",
+                5000
+              );
               console.error("Error fetching file info:", error);
             });
         });
@@ -239,14 +245,31 @@
           })
             .then((response) => {
               if (response.ok) {
+                createNotificationPopup(
+                  "Success",
+                  "Successfully deleted item.",
+                  "✅"
+                );
                 row.remove();
               } else {
-                alert("Failed to delete item.");
+                createNotificationPopup(
+                  "Error",
+                  "Failed to delete item.",
+                  "❌",
+                  5000
+                );
+                // alert("Failed to delete item.");
               }
             })
             .catch((error) => {
               console.error("Error:", error);
-              alert("Failed to delete item.");
+              createNotificationPopup(
+                "Error",
+                "Failed to delete item.",
+                "❌",
+                5000
+              );
+              // alert("Failed to delete item.");
             });
         }
       });

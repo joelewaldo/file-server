@@ -69,6 +69,10 @@ def search():
 def search_history():
   return sh.get_recent_searches(current_user)
 
+@main_bp.route('/delete-search-history', methods=['DELETE'])
+def delete_search_history():
+  return sh.delete_search_history(current_user)
+
 @main_bp.route('/update_hashing', methods=['POST'])
 @login_required
 def update_hashing():
@@ -78,6 +82,11 @@ def update_hashing():
 @login_required
 def update_preferred_upload_folder():
   return settings.update_preferred_upload_folder(current_user)
+
+@main_bp.route('/restore-db', methods=['GET'])
+@login_required
+def restore_db():
+  return settings.restore_db()
   
 @main_bp.route('/files', methods=['GET'])
 @login_required
