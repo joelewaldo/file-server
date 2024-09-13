@@ -23,6 +23,7 @@ class User(UserMixin, db.Model):
   created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=datetime.now(timezone.utc))
 
   settings = db.relationship('UserSettings', back_populates='user', uselist=False)
+  search_history = db.relationship('SearchHistory', back_populates='user')
 
   def set_password(self, password):
     self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')

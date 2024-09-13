@@ -1,12 +1,9 @@
-- add functionality for advanced searching
-  - create filters
     - sort by data
     - sort by file size
     - sort alphabetically
-    - search by file type
-    - search by location
-- create a bigger search page.
 - Add different icons for different filetypes in file and gallery view
 - add rename functionality
 - add move functionality
 - add an error message for files that are unable to be added.
+- add remove search history button in settings
+- add restore db from mount point button in settings

@@ -64,6 +64,11 @@ def delete_folder(folder_id):
 def search():
   return sh.search()
 
+@main_bp.route('/search-history', methods=['GET'])
+@login_required
+def search_history():
+  return sh.get_recent_searches(current_user)
+
 @main_bp.route('/update_hashing', methods=['POST'])
 @login_required
 def update_hashing():
@@ -212,6 +217,12 @@ def get_folder_by_name():
     return jsonify({'folder_id': folder.id})
   else:
     return jsonify({'message': 'Folder not found'}), 200
+  
+@main_bp.route('/search-results', methods=['GET'])
+@login_required
+def search_results():
+  results = sh.list_search(current_user)
+  return render_template('search.html', results=results)
   
 @main_bp.route('/settings', methods=['GET'])
 @login_required

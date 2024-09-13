@@ -104,7 +104,6 @@ input:checked + .switch::before {
   border-radius: 5px;
   color: #525252;
   position: absolute;
-  top: 25px;
   left: 50%;
   width: 100%;
   transform: translateX(-50%);
@@ -112,6 +111,9 @@ input:checked + .switch::before {
   display: none;
   transition: 0.2s;
   z-index: 1;
+  margin: 2px 0;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .dropdown-menu li {
@@ -132,4 +134,31 @@ input:checked + .switch::before {
 .dropdown-menu-open {
   display: block;
   opacity: 1;
+}
+
+.dropdown-menu::-webkit-scrollbar {
+  width: 8px; /* Width of the vertical scrollbar */
+}
+
+.dropdown-menu::-webkit-scrollbar-button {
+  display: none;
+}
+
+.dropdown-menu::-webkit-scrollbar-track {
+  background: transparent; /* Background color of the track */
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3); /* Color of the scroll thumb */
+  border-radius: 10px; /* Rounded corners of the thumb */
+  transition: background 0.3s ease; /* Smooth transition for hover effect */
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5); /* Color of the thumb on hover */
+}
+
+/* Style for the corner of the scrollbar (optional) */
+.dropdown-menu::-webkit-scrollbar-corner {
+  background: transparent; /* Background color of the corner */
 }

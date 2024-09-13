@@ -59,6 +59,62 @@
       </ul>
     </div>
 
+    <!-- Advanced Search Popup -->
+    <div id="advanced-search-popup" class="popup-overlay">
+      <div id="advanced-search-popup-content" class="popup-content">
+        <span class="close" id="close-advanced-search-popup">&times;</span>
+
+        <!-- Query Input Section -->
+        <div class="query-container">
+          <div class="form-description">
+            <span class="sub-text">Search Query</span>
+            <span class="small-text">Enter the keyword(s) to search for.</span>
+          </div>
+          <input
+            type="text"
+            id="search-query-input"
+            autocomplete="off"
+            class="query-input"
+            placeholder="Enter search query..."
+          />
+        </div>
+
+        <!-- File Type Dropdown Section -->
+        <div class="dropdown-container">
+          <div class="form-description">
+            <span class="sub-text">Type</span>
+            <span class="small-text">Choose which type to search for.</span>
+          </div>
+          <div class="dropdown" id="file-type-dropdown">
+            <div class="select">
+              <span class="dropdown-selected">All</span>
+              <div class="caret"></div>
+            </div>
+            <ul class="dropdown-menu">
+              <li class="dropdown-active" data-src="all">All</li>
+              <li data-src="folder">Folders</li>
+              <li data-src="pdf">PDFs</li>
+              <li data-src="folder">Folders</li>
+              <li data-src="photos_images">Photos & Images</li>
+              <li data-src="documents">Documents</li>
+              <li data-src="audio">Audio</li>
+              <li data-src="video">Video</li>
+              <li data-src="spreadsheets">Spreadsheets</li>
+              <li data-src="presentations">Presentations</li>
+              <li data-src="zip">Zip Files</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Search Button -->
+        <div class="button-container">
+          <button id="advanced-search-inner-btn" class="search-btn">
+            Search
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- New Folder Popup -->
     <div id="new-folder-popup" class="popup-overlay">
       <div class="popup-content">
@@ -129,6 +185,147 @@
         </div>
       </div>
     </div>
+    <script>
+      document
+        .getElementById("search-bar")
+        .addEventListener("focus", function () {
+          const searchLimit = 5;
+
+          fetch(`/search-history?limit=${searchLimit}`)
+            .then((response) => response.json())
+            .then((data) => {
+              const searchHistory = document.getElementById("search-history");
+              searchHistory.innerHTML = "";
+
+              if (data.length > 0) {
+                data.forEach((searchTerm) => {
+                  const searchItemContainer = document.createElement("div");
+                  searchItemContainer.classList.add("search-item-container");
+
+                  const searchIcon = document.createElement("i");
+                  searchIcon.classList.add("fas", "fa-search"); // FontAwesome classes for search icon
+
+                  const searchItem = document.createElement("p");
+                  searchItem.textContent = searchTerm;
+                  searchItem.classList.add("search-item");
+
+                  searchItemContainer.appendChild(searchIcon);
+                  searchItemContainer.appendChild(searchItem);
+
+                  searchItemContainer.addEventListener("click", function () {
+                    window.location.href = `/search-results?query=${encodeURIComponent(
+                      searchTerm
+                    )}`;
+                  });
+
+                  searchHistory.appendChild(searchItemContainer);
+                });
+              } else {
+                const noSearches = document.createElement("p");
+                noSearches.textContent = "No recent searches";
+                searchHistory.appendChild(noSearches);
+              }
+            });
+        });
+    </script>
+    <script>
+      document
+        .getElementById("advanced-search-inner-btn")
+        .addEventListener("click", function () {
+          const query = document
+            .getElementById("search-query-input")
+            .value.trim();
+          const selectedType = document
+            .querySelector(".dropdown-active")
+            .getAttribute("data-src");
+
+          if (query) {
+            const searchUrl = `/search-results?query=${encodeURIComponent(
+              query
+            )}&type=${encodeURIComponent(selectedType)}`;
+
+            window.location.href = searchUrl;
+          }
+        });
+    </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const dropdowns = document.querySelectorAll(".dropdown");
+        dropdowns.forEach((dropdown) => {
+          const select = dropdown.querySelector(".select");
+          const caret = dropdown.querySelector(".caret");
+          const menu = dropdown.querySelector(".dropdown-menu");
+          const options = dropdown.querySelectorAll(".dropdown-menu li");
+          const selected = dropdown.querySelector(".dropdown-selected");
+
+          select.addEventListener("click", () => {
+            select.classList.toggle("select-clicked");
+            caret.classList.toggle("caret-rotate");
+            menu.classList.toggle("dropdown-menu-open");
+          });
+
+          options.forEach((option) => {
+            option.addEventListener("click", () => {
+              if (dropdown.id == "mount-point-dropdown") {
+                fetch('{{ url_for("main.update_preferred_upload_folder") }}', {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    preferred_upload_folder: option.innerText,
+                  }),
+                })
+                  .then((response) => response.json())
+                  .then((data) => {
+                    if (data.success) {
+                      console.log("Mount point updated successfully!");
+                    } else {
+                      console.log("Failed to update mount point.");
+                    }
+                  });
+              }
+              selected.innerText = option.innerText;
+              select.classList.remove("select-clicked");
+              caret.classList.remove("caret-rotate");
+              menu.classList.remove("dropdown-menu-open");
+              options.forEach((option) => {
+                option.classList.remove("dropdown-active");
+              });
+
+              option.classList.add("dropdown-active");
+            });
+          });
+        });
+      });
+    </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        document
+          .getElementById("advanced-search-btn")
+          .addEventListener("click", function () {
+            document.getElementById("advanced-search-popup").style.display =
+              "flex";
+            const searchBar = document.getElementById("search-bar");
+            const query = searchBar.value.trim();
+            document.getElementById("search-query-input").value = query;
+          });
+
+        document.querySelector(".close").addEventListener("click", function () {
+          document.getElementById("advanced-search-popup").style.display =
+            "none";
+        });
+
+        window.addEventListener("click", function (event) {
+          if (
+            event.target === document.getElementById("advanced-search-popup")
+          ) {
+            document.getElementById("advanced-search-popup").style.display =
+              "none";
+          }
+        });
+      });
+    </script>
     <script>
       const dropArea = document.getElementById("drop-area");
 
@@ -312,6 +509,18 @@
           searchDropdown.classList.add("show");
         });
 
+        searchBar.addEventListener("keydown", function (event) {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            const query = searchBar.value.trim();
+            if (query) {
+              window.location.href = `/search-results?query=${encodeURIComponent(
+                query
+              )}`;
+            }
+          }
+        });
+
         // Hide dropdown and reset search bar shape when clicking outside
         document.addEventListener("click", function (event) {
           if (
@@ -322,14 +531,6 @@
             searchBar.classList.remove("active");
           }
         });
-
-        // Handle advanced search button click
-        document
-          .getElementById("advanced-search-btn")
-          .addEventListener("click", function () {
-            // Redirect to advanced search page or show advanced search options
-            alert("Advanced Search clicked!");
-          });
 
         const newButton = document.querySelector(".new-btn");
         const infobar = document.getElementById("new-options-infobar");
@@ -342,7 +543,6 @@
 
         // Show infobar
         newButton.addEventListener("click", function (event) {
-          console.log("clicked");
           event.stopPropagation(); // Prevent event from propagating to window click event
           infobar.style.display =
             infobar.style.display === "block" ? "none" : "block";

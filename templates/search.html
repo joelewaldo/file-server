@@ -1,6 +1,7 @@
 {% extends "files_base.html" %} {% block content %}
+
 <div class="content">
-  <h1>Welcome to the File Server</h1>
+  <h1>Search Results</h1>
 
   <!-- Search Bar -->
   <div class="search-bar-container">
@@ -26,56 +27,7 @@
     </div>
   </div>
 
-  <div class="toggle-button-container">
-    <div class="toggle-button" id="toggleButton">
-      {% if folder_data %}
-      <a
-        class="toggle-option grid-view"
-        href="{{ url_for('main.list_files', folder_id=folder_data[-1][1]) }}"
-      >
-        <div class="">
-          <i class="fas fa-list"></i>
-          <!-- Grid view icon -->
-        </div>
-      </a>
-      <a
-        class="toggle-option file-view"
-        href="{{ url_for('main.gallery', folder_id=folder_data[-1][1]) }}"
-      >
-        <div class="">
-          <i class="fas fa-th"></i>
-          <!-- File view icon -->
-        </div>
-      </a>
-      {% else %}
-      <a
-        class="toggle-option grid-view"
-        href="{{ url_for('main.list_files') }}"
-      >
-        <div class="">
-          <i class="fas fa-list"></i>
-          <!-- Grid view icon -->
-        </div>
-      </a>
-      <a class="toggle-option file-view" href="{{ url_for('main.gallery') }}">
-        <div class="">
-          <i class="fas fa-th"></i>
-          <!-- File view icon -->
-        </div>
-      </a>
-      {% endif %}
-    </div>
-  </div>
-
-  <!-- Breadcrumb Navigation -->
-  <div class="breadcrumb">
-    {% if folder_data %} {% for name, id in folder_data %} {% if not loop.first
-    %}> {% endif %}
-    <a href="{{ url_for('main.list_files', folder_id=id) }}">{{ name }}</a>
-    {% endfor %} {% endif %}
-  </div>
-
-  <div class="table-container">
+  <div class="table-container" id="search-results">
     <table class="file-list">
       <thead>
         <tr>
@@ -86,7 +38,7 @@
         </tr>
       </thead>
       <tbody id="file-list-body">
-        {% for item in folders %}
+        {% for item in results['results'] %} {% if item.type == 'folder' %}
         <tr
           class="file-row no-select pointer"
           data-redirect-url="{{ url_for('main.list_files', folder_id=item.id) }}"
@@ -95,10 +47,7 @@
             <i class="fas fa-folder"></i>
             {{ item.name }}
           </td>
-          <td
-            class="upload-date"
-            data-utc="{{ item.created_at.isoformat() }}"
-          ></td>
+          <td class="upload-date" data-utc="{{ item.created_at }}"></td>
           <td>—</td>
           <td class="actions-cell">
             <div class="actions">
@@ -115,16 +64,15 @@
             </div>
           </td>
         </tr>
-        {% endfor %} {% for item in files %}
+
+        {% else %}
+
         <tr
           class="file-row no-select pointer"
           data-url="{{ url_for('main.get_file', file_id=item.id) }}"
         >
-          <td><i class="fas fa-file"></i> {{ item.filename }}</td>
-          <td
-            class="upload-date"
-            data-utc="{{ item.upload_date.isoformat() }}"
-          ></td>
+          <td><i class="fas fa-file"></i> {{ item.name }}</td>
+          <td class="upload-date" data-utc="{{ item.created_at }}"></td>
           <td class="file-size" data-size="{{ item.file_size }}"></td>
           <td class="actions-cell">
             <div class="actions">
@@ -139,16 +87,13 @@
             </div>
           </td>
         </tr>
-        {% endfor %}
+
+        {% endif %} {% endfor %}
       </tbody>
     </table>
   </div>
-
-  <div id="loading-indicator" class="loading">
-    <div class="spinner"></div>
-    <span>Loading more files...</span>
-  </div>
 </div>
+
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".file-row").forEach(function (row) {
@@ -187,6 +132,7 @@
     });
   });
 </script>
+
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     let previousRow = null;
@@ -223,6 +169,7 @@
     });
   });
 </script>
+
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".fa-trash").forEach(function (icon) {
@@ -253,6 +200,7 @@
     });
   });
 </script>
+
 <script>
   function applyFormatting() {
     // Format dates and file sizes for existing elements
@@ -281,4 +229,5 @@
     applyFormatting();
   });
 </script>
+
 {% endblock %}

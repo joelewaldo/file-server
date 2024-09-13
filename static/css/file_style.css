@@ -290,6 +290,31 @@ h2 {
   background-color: #0056b3;
 }
 
+.search-dropdown .search-history .search-item {
+  text-align: left;
+  margin: 0;
+  width: 100%;
+}
+
+.search-item-container {
+  display: flex;
+  box-sizing: border-box;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  height: 40px;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  width: 100%;
+  gap: 12px;
+  cursor: default;
+}
+
+.search-item-container i.fa-search {
+  position: relative;
+  left: 0;
+}
+
 #search-results {
   width: 100%;
   position: relative;
@@ -864,4 +889,60 @@ h1 {
 #progress-text {
   margin-top: 10px;
   font-size: 16px;
+}
+
+/* Advanced Search Popup */
+
+#advanced-search-popup-content {
+  min-height: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.query-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.query-container input {
+  box-sizing: border-box;
+}
+
+#advanced-search-popup-content .dropdown-container {
+  width: 100%;
+}
+
+.query-input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Button container to position the button at the bottom right */
+.button-container {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+}
+
+/* Style the search button */
+.search-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.search-btn:hover {
+  background-color: #0056b3;
 }

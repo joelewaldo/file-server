@@ -38,7 +38,7 @@
           >Choose which mount point for the file server.</span
         >
       </div>
-      <div class="dropdown">
+      <div class="dropdown" id="mount-point-dropdown">
         <div class="select">
           <span class="dropdown-selected">{{ selected_mount_point }}</span>
           <div class="caret"></div>
@@ -79,51 +79,6 @@
           }
         });
     });
-</script>
-<script>
-  const dropdowns = document.querySelectorAll(".dropdown");
-  dropdowns.forEach((dropdown) => {
-    const select = dropdown.querySelector(".select");
-    const caret = dropdown.querySelector(".caret");
-    const menu = dropdown.querySelector(".dropdown-menu");
-    const options = dropdown.querySelectorAll(".dropdown-menu li");
-    const selected = dropdown.querySelector(".dropdown-selected");
-
-    select.addEventListener("click", () => {
-      select.classList.toggle("select-clicked");
-      caret.classList.toggle("caret-rotate");
-      menu.classList.toggle("dropdown-menu-open");
-    });
-
-    options.forEach((option) => {
-      option.addEventListener("click", () => {
-        fetch('{{ url_for("main.update_preferred_upload_folder") }}', {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ preferred_upload_folder: option.innerText }),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.success) {
-              console.log("Mount point updated successfully!");
-            } else {
-              console.log("Failed to update mount point.");
-            }
-          });
-        selected.innerText = option.innerText;
-        select.classList.remove("select-clicked");
-        caret.classList.remove("caret-rotate");
-        menu.classList.remove("dropdown-menu-open");
-        options.forEach((option) => {
-          option.classList.remove("dropdown-active");
-        });
-
-        option.classList.add("dropdown-active");
-      });
-    });
-  });
 </script>
 
 {% endblock %}
