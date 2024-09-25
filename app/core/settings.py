@@ -2,6 +2,8 @@ from flask import jsonify, request
 import os
 import mimetypes
 import hashlib
+from pathlib import Path
+from collections import Counter
 from app.models.file_model import Folder, File
 from flask import current_app as app
 from ..extensions import db
@@ -14,7 +16,7 @@ def update_hashing(current_user):
   current_user.settings.hashing = hashing
   db.session.commit()
 
-  return jsonify({'success': True})
+  return jsonify({'success': True}), 200
 
 def update_preferred_upload_folder(current_user):
   data = request.get_json()
@@ -23,7 +25,7 @@ def update_preferred_upload_folder(current_user):
   current_user.settings.preferred_upload_folder = preferred_upload_folder
   db.session.commit()
 
-  return jsonify({'success': True})
+  return jsonify({'success': True}), 200
 
 def restore_db():
   def add_folder_to_db(mount_point, folder_path, parent_id=None):
@@ -101,4 +103,46 @@ def restore_db():
         file_path = os.path.join(foldername, filename)
         add_file_to_db(file_path, current_folder)
 
-  return jsonify({'success': True})
+  return jsonify({'success': True}), 200
+
+def delete_storage_records():
+  try:
+    db.session.query(File).delete()
+    db.session.query(Folder).delete()
+
+    for folder in app.config['UPLOAD_FOLDERS']:
+      path = Path(folder)
+      if not path.exists():
+        path.mkdir(parents=True, exist_ok=True)
+
+      # Create a corresponding Folder model entry in the database
+      existing_folder = Folder.query.filter_by(name=path.name, parent_id=None).first()
+      if not existing_folder:
+        new_folder = Folder(name=path.name, path_stack=[], mount_point=folder)
+        db.session.add(new_folder)
+
+    db.session.commit()
+
+    return jsonify({'success': True}), 200
+  except Exception as e:
+    db.session.rollback()
+    return jsonify({'success': False}), 400
+  
+def clear_cache():
+  """Clear the cache directory by removing all cached thumbnail files."""
+  cache_folder = app.config.get('CACHE_FOLDER', 'cache')
+  
+  # Check if the cache directory exists
+  if os.path.exists(cache_folder):
+    # Iterate over all files in the cache directory and remove them
+    for filename in os.listdir(cache_folder):
+      file_path = os.path.join(cache_folder, filename)
+      try:
+        if os.path.isfile(file_path):
+          os.remove(file_path)
+      except Exception as e:
+        app.logger.error(f"Error removing file {file_path}: {e}")
+  else:
+      app.logger.warning("Cache folder does not exist.")
+
+  return jsonify({'success': True}), 200

@@ -30,6 +30,7 @@ class Config:
     'vhdl', 'verilog', 'hdl', 'sv', 's', 'asm', 'nasm', 'tsv', 'xsl', 'xslt', 'rss', 'atom', 'cgi',
     'php3', 'php4', 'php5', 'php7', 'phtml', 'tpl'
   }
+  FETCH_MIMETYPES = os.getenv('FETCH_MIMETYPES', "False").lower() in ['true', 'yes', 'y', '1']
   MAX_CONTENT_LENGTH = 10 * 1024 * 1024 * 1024  # 10 GB
   DEBUG = os.getenv('DEBUG', 'False').lower() in ['true', '1', 't', 'yes', 'y']
   SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///file_server.db')

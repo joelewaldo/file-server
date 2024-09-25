@@ -87,6 +87,16 @@ def update_preferred_upload_folder():
 @login_required
 def restore_db():
   return settings.restore_db()
+
+@main_bp.route('/clear-cache', methods=['POST'])
+@login_required
+def clear_cache():
+  return settings.clear_cache()
+
+@main_bp.route('/delete-storage-records', methods=['DELETE'])
+@login_required
+def delete_storage_records():
+  return settings.delete_storage_records()
   
 @main_bp.route('/files', methods=['GET'])
 @login_required

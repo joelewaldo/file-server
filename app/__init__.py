@@ -7,6 +7,10 @@ from pathlib import Path
 from collections import Counter
 from .extensions import db
 
+import requests
+from bs4 import BeautifulSoup
+import mimetypes
+
 def create_app(config_class):
   app = Flask(__name__, static_folder="../static", template_folder="../templates")
   app.config.from_object(config_class)
@@ -57,3 +61,30 @@ def setup_database(app):
         db.session.add(new_folder)
 
     db.session.commit()
+
+def initialize_mimetypes(app):
+  with app.app_context():
+    if app.config['FETCH_MIMETYPES']:
+      try:
+        url = 'https://mimetype.io/all-types'
+        response = requests.get(url)
+        response.raise_for_status()
+
+        soup = BeautifulSoup(response.text, 'html.parser')
+        table = soup.find('table', class_='w-full table-auto text-gray-500')
+
+        for row in table.find_all('tr'):
+          columns = row.find_all('td')
+
+          if len(columns) >= 2:
+            mime = columns[0].find('a').text.strip()
+            file_types = columns[1].text.strip()
+            extension_list = [ext.strip() for ext in file_types.split(',')]
+            for ext in extension_list:
+              mimetypes.add_type(mime, ext)
+        mimetypes.add_type("text/data", ".dat")
+        print("Successfully loaded mimetypes")
+      except Exception as e:
+        print(f"Failed to grab mimetypes\nReason: {e}")
+    else:
+      print("Using default mimetypes.")

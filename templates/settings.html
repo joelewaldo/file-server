@@ -55,10 +55,47 @@
     <div class="spacer"></div>
     <div class="btn-container">
       <div class="form-description">
+        <span class="sub-text">Clear Cache</span>
+        <span class="small-text"
+          >Clears image caching used to display images faster.</span
+        >
+      </div>
+      <button class="red-btn" id="clear-cache">Clear Cache</button>
+    </div>
+    <div class="spacer"></div>
+    <div class="btn-container">
+      <div class="form-description">
         <span class="sub-text">Delete Search History</span>
         <span class="small-text">Deletes search history.</span>
       </div>
       <button class="red-btn" id="delete-history-btn">Delete History</button>
+    </div>
+    <div class="spacer"></div>
+    <div class="btn-container">
+      <div class="form-description">
+        <span class="sub-text">Delete Storage Records</span>
+        <span class="small-text"
+          >Deletes all records of items in storage. The actual items are not
+          destroyed and can be restored via restore db.</span
+        >
+      </div>
+      <button class="red-btn" id="delete-storage-records">
+        Delete Storage Records
+      </button>
+    </div>
+
+    <div id="deleteRecordsModal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="deleteRecordsCloseBtn">&times;</span>
+        <h3>Confirm Action</h3>
+        <p>Are you sure you want to delete the storage records?</p>
+        <div class="modal-actions">
+          <button class="cancel-btn" id="deleteRecordsCancelBtn">Cancel</button>
+          <button class="red-btn" id="deleteRecordsContinueBtn">
+            Continue
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -74,16 +111,14 @@
       <button class="red-btn" id="restoreBtn">Restore Database</button>
     </div>
   </div>
-  <div id="confirmModal" class="modal">
+
+  <div id="restoreModal" class="modal">
     <div class="modal-content">
-      <span class="close">&times;</span>
+      <span class="close" id="restoreCloseBtn">&times;</span>
       <h3>Confirm Action</h3>
-      <p>
-        Are you sure you want to restore the database? Upload dates will be
-        reset to today.
-      </p>
+      <p>Are you sure you want to restore the database?</p>
       <div class="modal-actions">
-        <button class="cancel-btn" id="cancelBtn">Cancel</button>
+        <button class="cancel-btn" id="restoreCancelBtn">Cancel</button>
         <button class="red-btn" id="restoreContinueBtn">Continue</button>
       </div>
     </div>
@@ -91,16 +126,14 @@
 </div>
 
 <script>
+  // Toggle Hashing setting
   document
     .getElementById("hashing-toggle")
     .addEventListener("change", function () {
       const enabled = this.checked;
-
       fetch('{{ url_for("main.update_hashing") }}', {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ hashing: enabled }),
       })
         .then((response) => response.json())
@@ -108,7 +141,7 @@
           if (data.success) {
             createNotificationPopup(
               "Success",
-              "Hashing is now " + enabled + ".",
+              "Hashing is now " + (enabled ? "enabled" : "disabled") + ".",
               '<i class="fas fa-cog"></i>'
             );
           } else {
@@ -121,32 +154,94 @@
           }
         });
     });
-</script>
-<script>
-  const modal = document.getElementById("confirmModal");
-  const btn = document.getElementById("restoreBtn");
-  const closeBtn = document.getElementsByClassName("close")[0];
-  const cancelBtn = document.getElementById("cancelBtn");
-  const restoreContinueBtn = document.getElementById("restoreContinueBtn");
 
-  btn.onclick = function () {
-    modal.style.display = "block";
+  // Clear Cache functionality
+  document.getElementById("clear-cache").addEventListener("click", function () {
+    fetch("/clear-cache", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    })
+      .then((response) => {
+        if (response.ok) {
+          createNotificationPopup(
+            "Success",
+            "Cache successfully deleted!",
+            "✅"
+          );
+        } else {
+          createNotificationPopup(
+            "Error",
+            "Cache failed to delete!",
+            "❌",
+            5000
+          );
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        createNotificationPopup("Error", "Cache failed to delete!", "❌", 5000);
+      });
+  });
+
+  // Delete Records Modal functionality
+  const deleteRecordsModal = document.getElementById("deleteRecordsModal");
+  document.getElementById("delete-storage-records").onclick = function () {
+    deleteRecordsModal.style.display = "block";
+  };
+  document.getElementById("deleteRecordsCloseBtn").onclick = function () {
+    deleteRecordsModal.style.display = "none";
+  };
+  document.getElementById("deleteRecordsCancelBtn").onclick = function () {
+    deleteRecordsModal.style.display = "none";
+  };
+  document.getElementById("deleteRecordsContinueBtn").onclick = function () {
+    fetch("/delete-storage-records", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    })
+      .then((response) => {
+        if (response.ok) {
+          createNotificationPopup(
+            "Success",
+            "Storage records successfully deleted!",
+            "✅"
+          );
+        } else {
+          createNotificationPopup(
+            "Error",
+            "Storage records failed to delete!",
+            "❌",
+            5000
+          );
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        createNotificationPopup(
+          "Error",
+          "Storage records failed to delete!",
+          "❌",
+          5000
+        );
+      });
+    deleteRecordsModal.style.display = "none";
   };
 
-  closeBtn.onclick = function () {
-    modal.style.display = "none";
+  // Restore Database Modal functionality
+  const restoreModal = document.getElementById("restoreModal");
+  document.getElementById("restoreBtn").onclick = function () {
+    restoreModal.style.display = "block";
   };
-
-  cancelBtn.onclick = function () {
-    modal.style.display = "none";
+  document.getElementById("restoreCloseBtn").onclick = function () {
+    restoreModal.style.display = "none";
   };
-
-  restoreContinueBtn.onclick = function () {
+  document.getElementById("restoreCancelBtn").onclick = function () {
+    restoreModal.style.display = "none";
+  };
+  document.getElementById("restoreContinueBtn").onclick = function () {
     fetch("/restore-db", {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
     })
       .then((response) => {
         if (response.ok) {
@@ -159,36 +254,37 @@
         console.error("Error:", error);
         createNotificationPopup("Error", "DB failed to restore!", "❌", 5000);
       });
-    modal.style.display = "none";
+    restoreModal.style.display = "none";
   };
 
+  // Close modals when clicking outside of them
   window.onclick = function (event) {
-    if (event.target == modal) {
-      modal.style.display = "none";
+    if (event.target == deleteRecordsModal) {
+      deleteRecordsModal.style.display = "none";
+    } else if (event.target == restoreModal) {
+      restoreModal.style.display = "none";
     }
   };
-</script>
-<script>
+
+  // Delete Search History functionality
   document
     .getElementById("delete-history-btn")
     .addEventListener("click", function () {
       fetch("/delete-search-history", {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       })
         .then((response) => {
           if (response.ok) {
             createNotificationPopup(
               "Success",
-              "File history successfully deleted!",
+              "Search history successfully deleted!",
               "✅"
             );
           } else {
             createNotificationPopup(
               "Error",
-              "File history failed to delete!",
+              "Search history failed to delete!",
               "❌",
               5000
             );
@@ -198,12 +294,29 @@
           console.error("Error:", error);
           createNotificationPopup(
             "Error",
-            "File history failed to delete!",
+            "Search history failed to delete!",
             "❌",
             5000
           );
         });
     });
+
+  // Dropdown functionality
+  const dropdown = document.getElementById("mount-point-dropdown");
+  const dropdownMenu = dropdown.querySelector(".dropdown-menu");
+  dropdown.addEventListener("click", function () {
+    dropdownMenu.classList.toggle("show");
+  });
+  dropdownMenu.querySelectorAll("li").forEach(function (item) {
+    item.addEventListener("click", function () {
+      const selectedMountPoint = this.textContent;
+      document.querySelector(".dropdown-selected").textContent =
+        selectedMountPoint;
+      dropdownMenu.classList.remove("show");
+
+      // Perform your fetch or update logic here
+    });
+  });
 </script>
 
 {% endblock %}
