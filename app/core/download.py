@@ -6,6 +6,7 @@ import textwrap
 import shutil
 import zipfile
 from flask import current_app as app, request, jsonify, render_template, send_file
+from werkzeug.utils import secure_filename
 from app.models.file_model import Folder, File
 from ..extensions import db
 from PIL import Image, ImageDraw, ImageFont
@@ -137,7 +138,7 @@ def add_folder_to_zip(folder, zip_file, base_path=""):
   files = File.query.filter_by(parent_id=folder.id).all()
   for file in files:
     file_path = os.path.join(folder.mount_point, file.filepath)
-    arcname = os.path.join(base_path, file.filename)
+    arcname = os.path.join(base_path, secure_filename(file.filename))
     zip_file.write(file_path, arcname=arcname)
   
   # Recursively add subfolders
@@ -150,7 +151,7 @@ def download_file(file_id):
   file = File.query.get(file_id)
   
   if file and os.path.exists(file.filepath):
-    return send_file(file.filepath, as_attachment=True, download_name=file.filename)
+    return send_file(file.filepath, as_attachment=True, download_name=secure_filename(file.filename))
   else:
     return jsonify({'error': 'File not found'}), 404
   
@@ -247,6 +248,6 @@ def download_folder(folder_id):
   return send_file(
     buffer,
     as_attachment=True,
-    download_name=f"{folder.name}.zip",
+    download_name=secure_filename(f"{folder.name}.zip"),
     mimetype='application/zip'
   )
