@@ -32,6 +32,37 @@ h2 {
   cursor: default;
 }
 
+.scrollable {
+  overflow-y: auto;
+}
+
+.scrollable::-webkit-scrollbar {
+  width: 8px; /* Width of the vertical scrollbar */
+}
+
+.scrollable::-webkit-scrollbar-button {
+  display: none;
+}
+
+.scrollable::-webkit-scrollbar-track {
+  background: transparent; /* Background color of the track */
+}
+
+.scrollable::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3); /* Color of the scroll thumb */
+  border-radius: 10px; /* Rounded corners of the thumb */
+  transition: background 0.3s ease; /* Smooth transition for hover effect */
+}
+
+.scrollable::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5); /* Color of the thumb on hover */
+}
+
+/* Style for the corner of the scrollbar (optional) */
+.scrollable::-webkit-scrollbar-corner {
+  background: transparent; /* Background color of the corner */
+}
+
 .no-select {
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none; /* Safari */

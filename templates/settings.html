@@ -2,124 +2,127 @@
 
 <div class="content">
   <h1>Settings</h1>
-
-  <div class="form-group">
-    <h2>Upload</h2>
-    <div class="switch-container">
-      <div class="form-description">
-        <span class="sub-text">Hashing</span>
-        <span class="small-text"
-          >Enable unique hashing for future uploads.</span
-        >
-      </div>
-      <input
-        type="checkbox"
-        id="hashing-toggle"
-        class="settings-input"
-        {%
-        if
-        hashing
-        %}
-        checked
-        {%
-        endif
-        %}
-      />
-      <label class="switch" for="hashing-toggle"></label>
-    </div>
-  </div>
-
-  <div class="form-group">
-    <h2>Storage</h2>
-    <div class="dropdown-container">
-      <div class="form-description">
-        <span class="sub-text">Mount points</span>
-        <span class="small-text">Choose which mount point to base on.</span>
-      </div>
-      <div class="dropdown" id="mount-point-dropdown">
-        <div class="select">
-          <span class="dropdown-selected">{{ selected_mount_point }}</span>
-          <div class="caret"></div>
-        </div>
-        <ul class="dropdown-menu">
-          {% for mount_point in all_mount_points %}
-          <li
-            class="{% if mount_point.id == selected_mount_point.id %}dropdown-active{% endif %}"
+  <div class="scrollable">
+    <div class="form-group">
+      <h2>Upload</h2>
+      <div class="switch-container">
+        <div class="form-description">
+          <span class="sub-text">Hashing</span>
+          <span class="small-text"
+            >Enable unique hashing for future uploads.</span
           >
-            {{ mount_point.name }}
-          </li>
-          {% endfor %}
-        </ul>
+        </div>
+        <input
+          type="checkbox"
+          id="hashing-toggle"
+          class="settings-input"
+          {%
+          if
+          hashing
+          %}
+          checked
+          {%
+          endif
+          %}
+        />
+        <label class="switch" for="hashing-toggle"></label>
       </div>
-    </div>
-    <div class="spacer"></div>
-    <div class="btn-container">
-      <div class="form-description">
-        <span class="sub-text">Clear Cache</span>
-        <span class="small-text"
-          >Clears image caching used to display images faster.</span
-        >
-      </div>
-      <button class="red-btn" id="clear-cache">Clear Cache</button>
-    </div>
-    <div class="spacer"></div>
-    <div class="btn-container">
-      <div class="form-description">
-        <span class="sub-text">Delete Search History</span>
-        <span class="small-text">Deletes search history.</span>
-      </div>
-      <button class="red-btn" id="delete-history-btn">Delete History</button>
-    </div>
-    <div class="spacer"></div>
-    <div class="btn-container">
-      <div class="form-description">
-        <span class="sub-text">Delete Storage Records</span>
-        <span class="small-text"
-          >Deletes all records of items in storage. The actual items are not
-          destroyed and can be restored via restore db.</span
-        >
-      </div>
-      <button class="red-btn" id="delete-storage-records">
-        Delete Storage Records
-      </button>
     </div>
 
-    <div id="deleteRecordsModal" class="modal">
-      <div class="modal-content">
-        <span class="close" id="deleteRecordsCloseBtn">&times;</span>
-        <h3>Confirm Action</h3>
-        <p>Are you sure you want to delete the storage records?</p>
-        <div class="modal-actions">
-          <button class="cancel-btn" id="deleteRecordsCancelBtn">Cancel</button>
-          <button class="red-btn" id="deleteRecordsContinueBtn">
-            Continue
-          </button>
+    <div class="form-group">
+      <h2>Storage</h2>
+      <div class="dropdown-container">
+        <div class="form-description">
+          <span class="sub-text">Mount points</span>
+          <span class="small-text">Choose which mount point to base on.</span>
+        </div>
+        <div class="dropdown" id="mount-point-dropdown">
+          <div class="select">
+            <span class="dropdown-selected">{{ selected_mount_point }}</span>
+            <div class="caret"></div>
+          </div>
+          <ul class="dropdown-menu">
+            {% for mount_point in all_mount_points %}
+            <li
+              class="{% if mount_point.id == selected_mount_point.id %}dropdown-active{% endif %}"
+            >
+              {{ mount_point.name }}
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="btn-container">
+        <div class="form-description">
+          <span class="sub-text">Clear Cache</span>
+          <span class="small-text"
+            >Clears image caching used to display images faster.</span
+          >
+        </div>
+        <button class="red-btn" id="clear-cache">Clear Cache</button>
+      </div>
+      <div class="spacer"></div>
+      <div class="btn-container">
+        <div class="form-description">
+          <span class="sub-text">Delete Search History</span>
+          <span class="small-text">Deletes search history.</span>
+        </div>
+        <button class="red-btn" id="delete-history-btn">Delete History</button>
+      </div>
+      <div class="spacer"></div>
+      <div class="btn-container">
+        <div class="form-description">
+          <span class="sub-text">Delete Storage Records</span>
+          <span class="small-text"
+            >Deletes all records of items in storage. The actual items are not
+            destroyed and can be restored via restore db.</span
+          >
+        </div>
+        <button class="red-btn" id="delete-storage-records">
+          Delete Storage Records
+        </button>
+      </div>
+
+      <div id="deleteRecordsModal" class="modal">
+        <div class="modal-content">
+          <span class="close" id="deleteRecordsCloseBtn">&times;</span>
+          <h3>Confirm Action</h3>
+          <p>Are you sure you want to delete the storage records?</p>
+          <div class="modal-actions">
+            <button class="cancel-btn" id="deleteRecordsCancelBtn">
+              Cancel
+            </button>
+            <button class="red-btn" id="deleteRecordsContinueBtn">
+              Continue
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="form-group">
-    <h2>Recovery</h2>
-    <div class="btn-container">
-      <div class="form-description">
-        <span class="sub-text">Restore DB</span>
-        <span class="small-text"
-          >Rebuild the database from every mount point.</span
-        >
+    <div class="form-group">
+      <h2>Recovery</h2>
+      <div class="btn-container">
+        <div class="form-description">
+          <span class="sub-text">Restore DB</span>
+          <span class="small-text"
+            >Rebuild the database from every mount point.</span
+          >
+        </div>
+        <button class="red-btn" id="restoreBtn">Restore Database</button>
       </div>
-      <button class="red-btn" id="restoreBtn">Restore Database</button>
     </div>
-  </div>
 
-  <div id="restoreModal" class="modal">
-    <div class="modal-content">
-      <span class="close" id="restoreCloseBtn">&times;</span>
-      <h3>Confirm Action</h3>
-      <p>Are you sure you want to restore the database?</p>
-      <div class="modal-actions">
-        <button class="cancel-btn" id="restoreCancelBtn">Cancel</button>
-        <button class="red-btn" id="restoreContinueBtn">Continue</button>
+    <div id="restoreModal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="restoreCloseBtn">&times;</span>
+        <h3>Confirm Action</h3>
+        <p>Are you sure you want to restore the database?</p>
+        <div class="modal-actions">
+          <button class="cancel-btn" id="restoreCancelBtn">Cancel</button>
+          <button class="red-btn" id="restoreContinueBtn">Continue</button>
+        </div>
       </div>
     </div>
   </div>
