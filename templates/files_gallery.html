@@ -101,6 +101,15 @@
               >
             </li>
             <li>
+              <i class="fa-solid fa-pencil" aria-hidden="true"></i>
+              <button
+                class="rename-folder-btn"
+                data-url="{{ url_for('main.rename_folder', folder_id=folder.id, parent_id=folder.parent_id) }}"
+              >
+                Rename Folder
+              </button>
+            </li>
+            <li>
               <i class="fa fa-trash" aria-hidden="true"></i>
               <button
                 class="delete-file-btn"
@@ -143,6 +152,15 @@
                 <a href="{{ url_for('main.download_file', file_id=file.id) }}"
                   ><button class="download-btn">Download</button></a
                 >
+              </li>
+              <li>
+                <i class="fa-solid fa-pencil" aria-hidden="true"></i>
+                <button
+                  class="rename-file-btn"
+                  data-url="{{ url_for('main.rename_file', file_id=file.id, parent_id=file.parent_id) }}"
+                >
+                  Rename File
+                </button>
               </li>
               <li>
                 <i class="fa fa-trash" aria-hidden="true"></i>
@@ -375,6 +393,142 @@
     galleryView.addEventListener("scroll", handleScroll);
 
     addEventListeners();
+  });
+</script>
+<script>
+  function createRenamePopup(dataUrl, currentName, folder = true) {
+    // Create the overlay for the popup
+    const overlay = document.createElement("div");
+    overlay.classList.add("rename-popup-overlay");
+
+    // Create the popup container
+    const popupContainer = document.createElement("div");
+    popupContainer.classList.add("rename-popup-content");
+
+    // Create the title for the popup
+    const title = document.createElement("h3");
+    title.textContent = "Rename Item";
+    popupContainer.appendChild(title);
+
+    // Create the input field for the new name
+    const renameInput = document.createElement("input");
+    renameInput.setAttribute("type", "text");
+    renameInput.value = currentName;
+    renameInput.setAttribute("placeholder", "Enter new name");
+    renameInput.classList.add("rename-input");
+    popupContainer.appendChild(renameInput);
+
+    // Create the Cancel button
+    const cancelButton = document.createElement("button");
+    cancelButton.textContent = "Cancel";
+    cancelButton.classList.add("popup-button", "cancel-button");
+
+    // Add event listener for the Cancel button
+    cancelButton.addEventListener("click", function () {
+      document.body.removeChild(overlay);
+    });
+
+    popupContainer.appendChild(cancelButton);
+
+    // Create the OK button
+    const okButton = document.createElement("button");
+    okButton.textContent = "OK";
+    okButton.classList.add("popup-button", "ok-button");
+
+    // Add event listener for the OK button
+    okButton.addEventListener("click", function () {
+      const newName = renameInput.value.trim();
+      if (newName) {
+        fetch(dataUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name: newName }),
+        })
+          .then((response) => {
+            if (response.ok) {
+              createNotificationPopup(
+                "Success",
+                "Item renamed successfully.",
+                "✅"
+              );
+
+              if (folder) {
+                const folderItem = document
+                  .querySelector(`[data-url='${dataUrl}']`)
+                  .closest(".folder-item");
+                const currentName = (folderItem
+                  .querySelector(".folder-item-title")
+                  .querySelector("span").innerText = ` ${newName} `);
+              } else {
+                const folderItem = document
+                  .querySelector(`[data-url='${dataUrl}']`)
+                  .closest(".file-item");
+                const currentName = (folderItem.querySelector(
+                  ".file-name"
+                ).innerText = ` ${newName} `);
+              }
+
+              document.body.removeChild(overlay);
+            } else {
+              createNotificationPopup(
+                "Error",
+                "Failed to rename the item.",
+                "❌",
+                5000
+              );
+            }
+          })
+          .catch((error) => {
+            createNotificationPopup(
+              "Error",
+              "An error occurred while renaming the item.",
+              "❌",
+              5000
+            );
+            console.error("Error renaming the item:", error);
+          });
+      } else {
+        alert("Name cannot be empty.");
+      }
+    });
+
+    popupContainer.appendChild(okButton);
+
+    // Append the popup container to the overlay
+    overlay.appendChild(popupContainer);
+
+    // Add the overlay to the document body
+    document.body.appendChild(overlay);
+  }
+
+  // Add event listeners to rename icons
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".rename-folder-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        const url = this.getAttribute("data-url");
+        const folderItem = this.closest(".folder-item");
+        const currentName = folderItem
+          .querySelector(".folder-item-title")
+          .querySelector("span")
+          .innerText.trim();
+        createRenamePopup(url, currentName);
+      });
+    });
+  });
+
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".rename-file-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        const url = this.getAttribute("data-url");
+        const fileItem = this.closest(".file-item");
+        const currentName = fileItem
+          .querySelector(".file-name")
+          .innerText.trim();
+        createRenamePopup(url, currentName, (folder = false));
+      });
+    });
   });
 </script>
 {% endblock %}
