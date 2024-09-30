@@ -27,6 +27,12 @@
     </div>
   </div>
 
+  <!-- Pagination Controls -->
+  <div class="pagination-controls">
+    <button id="prev-page-btn" class="pagination-btn" {% if not results['has_prev'] %}disabled{% endif %} ><div class="left-arrow"></div>{% if not results['has_next'] and results['has_prev'] %}Previous{% endif %}</button>
+    <button id="next-page-btn" class="pagination-btn" {% if not results['has_next'] %}disabled{% endif %}>{% if results['has_next'] %}Next{% endif %}<div class="right-arrow"></div></button>
+  </div>
+
   <div class="table-container" id="search-results">
     <table class="file-list">
       <thead>
@@ -56,11 +62,13 @@
               >
                 <i class="fa fa-download" aria-hidden="true"></i>
               </a>
+              {% if item.parent_id %}
               <i
                 class="fa-solid fa-pencil cursor"
                 aria-hidden="true"
                 data-url="{{ url_for('main.rename_folder', folder_id=item.id, parent_id=item.parent_id) }}"
               ></i>
+              {% endif %}
               <i
                 class="fa fa-trash cursor"
                 aria-hidden="true"
@@ -352,6 +360,41 @@
       });
     });
   });
+</script>
+<script>
+  const prevPageBtn = document.getElementById("prev-page-btn");
+  const nextPageBtn = document.getElementById("next-page-btn");
+  let currentPage = {{ results['current_page'] }};
+
+  prevPageBtn.addEventListener("click", function () {
+    if (currentPage > 1) {
+      currentPage--;
+      loadSearchResults(currentPage);
+    }
+  });
+
+  nextPageBtn.addEventListener("click", function () {
+    if ({{ results['next_page'] }}) {
+      currentPage++;
+      loadSearchResults(currentPage);
+    }
+  });
+
+  function loadSearchResults(page) {
+    // Get the current URL and its search parameters
+    const url = new URL(window.location.href);
+    const searchParams = new URLSearchParams(url.search);
+  
+    // Set the 'page' parameter to the desired page
+    searchParams.set('page', page);
+  
+    // Update the URL with the new page parameter (without reloading the page)
+    const newUrl = `${url.pathname}?${searchParams.toString()}`;
+    window.history.pushState({ path: newUrl }, '', newUrl);
+  
+    // Reload the page to fetch the new search results
+    window.location.reload();
+  }
 </script>
 
 {% endblock %}

@@ -109,6 +109,7 @@
                 ><button class="download-btn">Download</button></a
               >
             </li>
+            {% if folder.parent_id %}
             <li>
               <i class="fa-solid fa-pencil" aria-hidden="true"></i>
               <button
@@ -118,6 +119,7 @@
                 Rename Folder
               </button>
             </li>
+            {% endif %}
             <li>
               <i class="fa fa-trash" aria-hidden="true"></i>
               <button

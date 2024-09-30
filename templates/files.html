@@ -116,11 +116,13 @@
               >
                 <i class="fa fa-download" aria-hidden="true"></i>
               </a>
+              {% if item.parent_id %}
               <i
                 class="fa-solid fa-pencil cursor"
                 aria-hidden="true"
                 data-url="{{ url_for('main.rename_folder', folder_id=item.id, parent_id=item.parent_id) }}"
               ></i>
+              {% endif %}
               <i
                 class="fa fa-trash cursor"
                 aria-hidden="true"

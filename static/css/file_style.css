@@ -1098,3 +1098,72 @@ h1 {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 20px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+
+.pagination-btn {
+  border: none;
+  padding: 10px;
+  background: #f1f1f1;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #ddd;
+  gap: 5px;
+}
+
+#next-page-btn {
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+#prev-page-btn {
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+.pagination-btn:disabled {
+  cursor: not-allowed;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: #cdcdcd; /* Darker blue on hover */
+}
+
+#current-page,
+#total-pages {
+  font-size: 16px;
+  margin: 0 10px;
+}
+
+.right-arrow {
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 16px solid #a4a4a4; /* Color for the arrow */
+  display: inline-block;
+}
+
+.left-arrow {
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-right: 16px solid #a4a4a4; /* Color for the arrow */
+  display: inline-block;
+}

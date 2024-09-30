@@ -20,7 +20,7 @@ def search():
     folder_id = request.args.get('folder_id', None, type=int)
     search_type = request.args.get('type', 'all', type=str)
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)  # Number of items per page
+    per_page = request.args.get('per_page', 25, type=int)  # Number of items per page
 
     if not query:
         return jsonify({'error': 'Query parameter is required'}), 400
@@ -95,6 +95,7 @@ def search():
         'has_prev': paginated_results.has_prev,
         'next_page': paginated_results.next_num if paginated_results.has_next else None,
         'prev_page': paginated_results.prev_num if paginated_results.has_prev else None,
+        'current_page': page,
         'total_items': paginated_results.total
     })
 
@@ -103,7 +104,7 @@ def list_search(current_user):
     folder_id = request.args.get('folder_id', None, type=int)
     search_type = request.args.get('type', 'all', type=str)
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)  # Number of items per page
+    per_page = request.args.get('per_page', 25, type=int)  # Number of items per page
 
     if not query:
         return {
@@ -202,6 +203,7 @@ def list_search(current_user):
         'has_prev': paginated_results.has_prev,
         'next_page': paginated_results.next_num if paginated_results.has_next else None,
         'prev_page': paginated_results.prev_num if paginated_results.has_prev else None,
+        'current_page': page,
         'total_items': paginated_results.total
     }
 
