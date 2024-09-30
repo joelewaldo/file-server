@@ -2,7 +2,7 @@ from flask import current_app as app, request, jsonify, send_from_directory, ren
 from flask_login import login_required, current_user
 import os
 from .models.file_model import File, Folder
-from .core import settings, upload, delete, download, rename, search as sh, create_folder as cf
+from .core import settings, upload, delete, download, rename, move, search as sh, create_folder as cf
 from .utils import get_upload_folder_id, get_upload_folder
 
 main_bp = Blueprint('main', __name__)
@@ -68,6 +68,16 @@ def rename_file(file_id, parent_id):
 @login_required
 def rename_folder(folder_id, parent_id):
   return rename.rename_folder(folder_id, parent_id)
+
+@main_bp.route('/move_file/<int:file_id>/<int:target_folder_id>', methods=['POST'])
+@login_required
+def move_file(file_id, target_folder_id):
+  return move.move_file(file_id, target_folder_id)
+
+@main_bp.route('/move_folder/<int:folder_id>/<int:target_folder_id>', methods=['POST'])
+@login_required
+def move_folder(folder_id, target_folder_id):
+  return move.move_folder(folder_id, target_folder_id)
 
 @main_bp.route('/search', methods=['GET'])
 @login_required

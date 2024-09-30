@@ -37,6 +37,7 @@ def search():
     if search_type == 'folder':
         files_query = files_query.filter(False)  # Exclude all files if searching for folders
     elif search_type in FILE_CATEGORIES:
+        folders_query = folders_query.filter(False) # Exclude all folders if searching for files
         files_query = files_query.filter(File.mimetype.in_(FILE_CATEGORIES[search_type]))
     elif not search_type == 'all':
         return jsonify({'error': 'Invalid search type'}), 400
@@ -126,6 +127,7 @@ def list_search(current_user):
     if search_type == 'folder':
         files_query = files_query.filter(False)  # Exclude all files if searching for folders
     elif search_type in FILE_CATEGORIES:
+        folders_query = folders_query.filter(False) # Exclude all folders if searching for files
         files_query = files_query.filter(File.mimetype.in_(FILE_CATEGORIES[search_type]))
     elif not search_type == 'all':
         return {

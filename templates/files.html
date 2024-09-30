@@ -70,8 +70,14 @@
   <!-- Breadcrumb Navigation -->
   <div class="breadcrumb">
     {% if folder_data %} {% for name, id in folder_data %} {% if not loop.first
-    %}> {% endif %}
-    <a href="{{ url_for('main.list_files', folder_id=id) }}">{{ name }}</a>
+    %}
+    <h3>></h3>
+    {% endif %}
+    <a href="{{ url_for('main.list_files', folder_id=id) }}"
+      ><div class="breadcrumb-folder" data-folder-id="{{ id }}">
+        <span>{{ name }}</span>
+      </div></a
+    >
     {% endfor %} {% endif %}
   </div>
 
@@ -90,6 +96,9 @@
         <tr
           class="file-row no-select pointer"
           data-redirect-url="{{ url_for('main.list_files', folder_id=item.id) }}"
+          draggable="true"
+          data-type="folder"
+          data-id="{{ item.id }}"
         >
           <td>
             <i class="fas fa-folder"></i>
@@ -124,6 +133,9 @@
         <tr
           class="file-row no-select pointer"
           data-url="{{ url_for('main.get_file', file_id=item.id) }}"
+          draggable="true"
+          data-type="file"
+          data-id="{{ item.id }}"
         >
           <td><i class="fas fa-file"></i> {{ item.filename }}</td>
           <td
@@ -152,6 +164,16 @@
         {% endfor %}
       </tbody>
     </table>
+  </div>
+
+  <div
+    id="drag-bubble"
+    style="position: absolute; top: -1000px; opacity: 0; pointer-events: none"
+  >
+    <div class="drag-bubble-content">
+      <i class="drag-icon"></i>
+      <span class="file-name"></span>
+    </div>
   </div>
 
   <div id="loading-indicator" class="loading">
@@ -426,6 +448,172 @@
         createRenamePopup(url, currentName);
       });
     });
+  });
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    let draggedItemId = null;
+    let itemType = null;
+    const dragBubble = document.getElementById("drag-bubble");
+    const fileNameSpan = dragBubble.querySelector(".file-name");
+    const dragIcon = dragBubble.querySelector(".drag-icon");
+
+    // Handle file drag start
+    document.querySelectorAll(".file-row").forEach(function (fileRow) {
+      itemType = fileRow.getAttribute("data-type"); // 'file' or 'folder'
+
+      if (itemType == "folder") {
+        fileRow.addEventListener("dragover", function (event) {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "move"; // Indicate the move operation is allowed
+        });
+
+        fileRow.addEventListener("drop", function (event) {
+          event.preventDefault();
+          const targetFolderId = event.target
+            .closest("[data-id]")
+            .getAttribute("data-id");
+
+          console.log(itemType);
+
+          if (draggedItemId && targetFolderId) {
+            // Send request to the backend to move the item (file or folder)
+            let url = `/move_file/${draggedItemId}/${targetFolderId}`;
+            if (itemType == "folder") {
+              url = `/move_folder/${draggedItemId}/${targetFolderId}`;
+            }
+
+            fetch(url, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            })
+              .then((response) => {
+                if (response.ok) {
+                  createNotificationPopup(
+                    "Success",
+                    "Item moved successfully.",
+                    "✅"
+                  );
+
+                  location.reload();
+                } else {
+                  createNotificationPopup(
+                    "Error",
+                    "Failed to move item.",
+                    "❌",
+                    5000
+                  );
+                }
+              })
+              .catch((error) => {
+                createNotificationPopup(
+                  "Error",
+                  "An error occurred.",
+                  "❌",
+                  5000
+                );
+                console.error("Error moving item:", error);
+              });
+          }
+        });
+      }
+
+      fileRow.addEventListener("dragstart", function (event) {
+        draggedItemId = event.target.getAttribute("data-id");
+        itemType = fileRow.getAttribute("data-type");
+
+        // Set the icon based on whether it's a file or folder
+        if (itemType === "folder") {
+          dragIcon.className = "drag-icon fas fa-folder"; // Folder icon
+        } else {
+          dragIcon.className = "drag-icon fas fa-file"; // File icon
+        }
+
+        // Set the bubble content (file/folder name)
+        const fileName = fileRow.querySelector("td").innerText.trim();
+        fileNameSpan.textContent = fileName;
+
+        // Position the bubble off-screen (for the drag preview)
+        dragBubble.style.opacity = "1";
+        dragBubble.style.top = "-1000px"; // Hide the bubble initially
+
+        // Set the custom drag image (bubble preview)
+        event.dataTransfer.setDragImage(dragBubble, 0, 0); // Set the drag image position
+
+        event.dataTransfer.effectAllowed = "move";
+      });
+
+      fileRow.addEventListener("dragend", function () {
+        // Reset the bubble when dragging ends
+        dragBubble.style.opacity = "0";
+        draggedItemId = null;
+        itemType = null;
+      });
+    });
+
+    // Handle breadcrumb drag over (allows dropping)
+    document
+      .querySelectorAll(".breadcrumb-folder")
+      .forEach(function (breadcrumb) {
+        breadcrumb.addEventListener("dragover", function (event) {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "move"; // Indicate the move operation is allowed
+        });
+
+        // Handle file/folder drop on breadcrumb
+        breadcrumb.addEventListener("drop", function (event) {
+          event.preventDefault();
+          const targetFolderId = event.target
+            .closest("[data-folder-id]")
+            .getAttribute("data-folder-id");
+
+          console.log(itemType);
+
+          if (draggedItemId && targetFolderId) {
+            // Send request to the backend to move the item (file or folder)
+            let url = `/move_file/${draggedItemId}/${targetFolderId}`;
+            if (itemType == "folder") {
+              url = `/move_folder/${draggedItemId}/${targetFolderId}`;
+            }
+
+            fetch(url, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            })
+              .then((response) => {
+                if (response.ok) {
+                  createNotificationPopup(
+                    "Success",
+                    "Item moved successfully.",
+                    "✅"
+                  );
+
+                  location.reload();
+                } else {
+                  createNotificationPopup(
+                    "Error",
+                    "Failed to move item.",
+                    "❌",
+                    5000
+                  );
+                }
+              })
+              .catch((error) => {
+                createNotificationPopup(
+                  "Error",
+                  "An error occurred.",
+                  "❌",
+                  5000
+                );
+                console.error("Error moving item:", error);
+              });
+          }
+        });
+      });
   });
 </script>
 {% endblock %}
