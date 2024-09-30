@@ -57,6 +57,11 @@
                 <i class="fa fa-download" aria-hidden="true"></i>
               </a>
               <i
+                class="fa-solid fa-pencil cursor"
+                aria-hidden="true"
+                data-url="{{ url_for('main.rename_folder', folder_id=item.id, parent_id=item.parent_id) }}"
+              ></i>
+              <i
                 class="fa fa-trash cursor"
                 aria-hidden="true"
                 data-url="{{ url_for('main.delete_folder', folder_id=item.id) }}"
@@ -79,6 +84,11 @@
               <a href="{{ url_for('main.download_file', file_id=item.id) }}">
                 <i class="fa fa-download" aria-hidden="true"></i>
               </a>
+              <i
+                class="fa-solid fa-pencil cursor"
+                aria-hidden="true"
+                data-url="{{ url_for('main.rename_file', file_id=item.id, parent_id=item.parent_id) }}"
+              ></i>
               <i
                 class="fa fa-trash cursor"
                 aria-hidden="true"
@@ -227,6 +237,120 @@
 
   document.addEventListener("DOMContentLoaded", function () {
     applyFormatting();
+  });
+</script>
+<script>
+  function createRenamePopup(dataUrl, currentName) {
+    // Create the overlay for the popup
+    const overlay = document.createElement("div");
+    overlay.classList.add("rename-popup-overlay");
+
+    // Create the popup container
+    const popupContainer = document.createElement("div");
+    popupContainer.classList.add("rename-popup-content");
+
+    // Create the title for the popup
+    const title = document.createElement("h3");
+    title.textContent = "Rename Item";
+    popupContainer.appendChild(title);
+
+    // Create the input field for the new name
+    const renameInput = document.createElement("input");
+    renameInput.setAttribute("type", "text");
+    renameInput.value = currentName;
+    renameInput.setAttribute("placeholder", "Enter new name");
+    renameInput.classList.add("rename-input");
+    popupContainer.appendChild(renameInput);
+
+    // Create the Cancel button
+    const cancelButton = document.createElement("button");
+    cancelButton.textContent = "Cancel";
+    cancelButton.classList.add("popup-button", "cancel-button");
+
+    // Add event listener for the Cancel button
+    cancelButton.addEventListener("click", function () {
+      document.body.removeChild(overlay);
+    });
+
+    popupContainer.appendChild(cancelButton);
+
+    // Create the OK button
+    const okButton = document.createElement("button");
+    okButton.textContent = "OK";
+    okButton.classList.add("popup-button", "ok-button");
+
+    // Add event listener for the OK button
+    okButton.addEventListener("click", function () {
+      const newName = renameInput.value.trim();
+      if (newName) {
+        fetch(dataUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name: newName }),
+        })
+          .then((response) => {
+            if (response.ok) {
+              createNotificationPopup(
+                "Success",
+                "Item renamed successfully.",
+                "✅"
+              );
+
+              const fileRow = document
+                .querySelector(`[data-url='${dataUrl}']`)
+                .closest("tr");
+              const firstRow = fileRow.querySelector("td");
+              const icon = firstRow.querySelector("i");
+
+              firstRow.textContent = ` ${newName} `;
+              firstRow.prepend(icon);
+
+              document.body.removeChild(overlay);
+            } else {
+              createNotificationPopup(
+                "Error",
+                "Failed to rename the item.",
+                "❌",
+                5000
+              );
+            }
+          })
+          .catch((error) => {
+            createNotificationPopup(
+              "Error",
+              "An error occurred while renaming the item.",
+              "❌",
+              5000
+            );
+            console.error("Error renaming the item:", error);
+          });
+      } else {
+        alert("Name cannot be empty.");
+      }
+    });
+
+    popupContainer.appendChild(okButton);
+
+    // Append the popup container to the overlay
+    overlay.appendChild(popupContainer);
+
+    // Add the overlay to the document body
+    document.body.appendChild(overlay);
+  }
+
+  // Add event listeners to rename icons
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".fa-pencil").forEach(function (icon) {
+      icon.addEventListener("click", function () {
+        const url = this.getAttribute("data-url");
+        const currentName = this.closest("tr")
+          .querySelector("td")
+          .textContent.trim();
+        createRenamePopup(url, currentName);
+      });
+    });
   });
 </script>
 

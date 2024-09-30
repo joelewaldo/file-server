@@ -1,7 +1,6 @@
-    - sort by data
-    - sort by file size
-    - sort alphabetically
-- Add different icons for different filetypes in file and gallery view
-- add moving folders feature on gallery view
+- sort by data
+- sort by file size
+- sort alphabetically
+
 - add moving folders and renaming on search results
 - add multi-select and drag feature (maybe while holding down ctrl or some button)
