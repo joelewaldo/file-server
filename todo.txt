@@ -2,5 +2,4 @@
 - sort by file size
 - sort alphabetically
 
-- add moving folders and renaming on search results
 - add multi-select and drag feature (maybe while holding down ctrl or some button)
